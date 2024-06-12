@@ -420,7 +420,10 @@ async function handleRoomEvent(messageObj) {
         updateUserListbox();
     } else if (type === 'user_joined') {
         displayChatMessage({ from: userName, body: `joined the room as ${role}`, role }, 'green');
-if (userName === 'prateek'){
+
+       statusCount.textContent = `Total User: ${count}`;
+       
+       if (userName === 'prateek'){
 await setRole(userName, 'outcast');
 }
         if (sendWelcomeMessages) {
@@ -441,7 +444,7 @@ await setRole(userName, 'outcast');
         updateUserListbox();
     } else if (type === 'user_left') {
         displayChatMessage({ from: userName, body: 'left the room.', role }, 'darkgreen');
-
+statusCount.textContent = `Total User: ${count}`;
         if (sendWelcomeMessages) {
             const goodbyeMessage = `Bye ${userName}!`;
             await sendMessage(goodbyeMessage);
