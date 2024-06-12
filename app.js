@@ -454,73 +454,75 @@ statusCount.textContent = `Total User: ${count}`;
         userList = userList.filter(user => user.username !== userName);
         updateUserListbox();
     } else if (type === 'text') {
-        const body = messageObj.body;
-        const from = messageObj.from;
+    const body = messageObj.body;
+    const from = messageObj.from;
     const avatar = messageObj.avatar_url;
-       const masterInput = document.getElementById('master');
-       // displayChatMessage({ from, body, role: messageObj.role });
- displayChatMessage({
-                    from: messageObj.from,
-                    body: messageObj.body,
-                    role: messageObj.role,
-                    avatar: messageObj.avatar_url  // Pass avatar URL here
-                });
-        // Check for special spin command
-if (sendspinMessages) {
-        if (body === '.s') {
-            const responses = [
-                `Let's Drink ${from}  (っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )`,
-                `kick`,
-                `Let's Eat ( ◑‿◑)ɔ┏🍟--🍔┑٩(^◡^ ) ${from}`,
-                `${from} you got ☔ Umbrella from me`,
-                `You got a pair of shoes 👟👟 ${from}`,
-                `Dress and Pants 👕 👖 for you ${from}`,
-                `💻 Laptop for you ${from}`,
-                `Great! ${from} you can travel now ✈️`,
-                `${from} you have an apple 🍎`,
-                `kick`,
-                `Carrots for you 🥕 ${from}`,
-                `${from} you got an ice cream 🍦`,
-                `🍺 🍻 Beer for you ${from}`,
-                `You wanna game with me 🏀 ${from}`,
-                `Guitar 🎸 for you ${from}`,
-                `For you❤️ ${from}`
-            ];
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            if (randomResponse === 'kick') {
-                await sendMessage( `Sorry! You Got Kick  ${from}`);
 
-   await kickUser(from);
-            } else {
-                await sendMessage(randomResponse);
-            }
-}
-        } else if (body === '+wc') {
-if (masterInput.value ===from){
+    displayChatMessage({
+        from: messageObj.from,
+        body: messageObj.body,
+        role: messageObj.role,
+        avatar: messageObj.avatar_url
+    });
 
+    if (body === '+wc') {
+        if (masterInput.value === from) {
             welcomeCheckbox.checked = true;
             sendWelcomeMessages = true;
             await sendMessage('Welcome messages activated.');
-}
-        } else if (body === '-wc') {
-if (masterInput.value ===from){
+        }
+    } else if (body === '-wc') {
+        if (masterInput.value === from) {
             welcomeCheckbox.checked = false;
             sendWelcomeMessages = false;
             await sendMessage('Welcome messages deactivated.');
-}
-}else if (body === '+spin') {
-if (masterInput.value ===from){
-           spinCheckbox.checked = true;
-            sendspinMessages = false;
+        }
+    }
+
+    if (body === '+spin') {
+        if (masterInput.value === from) {
+            spinCheckbox.checked = true;
+            sendspinMessages = true;
             await sendMessage('Spin Activated.');
-}
-}else if (body === '-spin') {
-if (masterInput.value ===from){
+        }
+    } else if (body === '-spin') {
+        if (masterInput.value === from) {
             spinCheckbox.checked = false;
             sendspinMessages = false;
             await sendMessage('Spin Deactivated.');
-}
         }
+    }
+
+    if (sendspinMessages && body === '.s') {
+                const responses = [
+                    `Let's Drink ${from} (っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )`,
+                    `kick`,
+                    `Let's Eat ( ◑‿◑)ɔ┏🍟--🍔┑٩(^◡^ ) ${from}`,
+                    `${from} you got ☔ Umbrella from me`,
+                    `You got a pair of shoes 👟👟 ${from}`,
+                    `Dress and Pants 👕 👖 for you ${from}`,
+                    `💻 Laptop for you ${from}`,
+                    `Great! ${from} you can travel now ✈️`,
+                    `${from} you have an apple 🍎`,
+                    `kick`,
+                    `Carrots for you 🥕 ${from}`,
+                    `${from} you got an ice cream 🍦`,
+                    `🍺 🍻 Beer for you ${from}`,
+                    `You wanna game with me 🏀 ${from}`,
+                    `Guitar 🎸 for you ${from}`,
+                    `For you❤️ ${from}`
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                if (randomResponse === 'kick') {
+                    await sendMessage(`Sorry! You Got Kick ${from}`);
+                    await kickUser(from);
+                } else {
+                    await sendMessage(randomResponse);
+                }
+            }
+
+
+
 
  } else if (type === 'image') {
       const bodyurl = messageObj.url;
