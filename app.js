@@ -36,7 +36,7 @@ const memButton = document.getElementById('memButton');
 const adminButton = document.getElementById('adminButton');
 const ownerButton = document.getElementById('ownerButton');
 const noneButton = document.getElementById('noneButton');
- const masterInput = document.getElementById('master');
+ //const masterInput = document.getElementById('master');
 
    const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
 
@@ -457,6 +457,7 @@ statusCount.textContent = `Total User: ${count}`;
         const body = messageObj.body;
         const from = messageObj.from;
     const avatar = messageObj.avatar_url;
+       const masterInput = document.getElementById('master');
        // displayChatMessage({ from, body, role: messageObj.role });
  displayChatMessage({
                     from: messageObj.from,
