@@ -7,19 +7,24 @@
     let userList = [];
   let reconnectInterval = 10000; // 10 seconds for reconnect attempts
     let reconnectTimeout;
+//==================
+let captchaUrls = "";
+   // let captchaImg;
+   // let captchaTextbox;
+  //  let sendCaptchaButton;
+let captchaImg, captchaTextbox, sendCaptchaButton;
+//=======================
 
-
-
-
-
+ 
     const loginButton = document.getElementById('loginButton');
     const joinRoomButton = document.getElementById('joinRoomButton');
     const leaveRoomButton = document.getElementById('leaveRoomButton');
     const sendMessageButton = document.getElementById('sendMessageButton');
-const sendCaptchaButton = document.getElementById('sendCaptchaButton');
+
     const statusDiv = document.getElementById('status');
     const statusCount = document.getElementById('count');
-    const chatbox = document.getElementById('chatbox');
+   // const chatbox = document.getElementById('chatbox');
+let chatbox = document.getElementById('chatbox');
     const welcomeCheckbox = document.getElementById('welcomeCheckbox');
    const spinCheckbox = document.getElementById('spinCheckbox');
     const roomListbox = document.getElementById('roomListbox');
@@ -28,7 +33,7 @@ const sendCaptchaButton = document.getElementById('sendCaptchaButton');
     const debugBox = document.getElementById('debugBox');
     const emojiList = document.getElementById('emojiList');
     const messageInput = document.getElementById('message');
-    const captchaUrlInput = document.getElementById('captchaUrl');
+ 
   const targetInput = document.getElementById('target');
     const banButton = document.getElementById('banButton');
     const kickButton = document.getElementById('kickButton');
@@ -36,9 +41,16 @@ const memButton = document.getElementById('memButton');
 const adminButton = document.getElementById('adminButton');
 const ownerButton = document.getElementById('ownerButton');
 const noneButton = document.getElementById('noneButton');
- //const masterInput = document.getElementById('master');
-
+ const masterInput = document.getElementById('master');
    const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
+
+
+
+
+
+ 
+
+
 
 
 noneButton.addEventListener('click', async () => {
@@ -57,21 +69,16 @@ adminButton.addEventListener('click', async () => {
         const target = targetInput.value;
         await setRole(target, 'member');
     });
+
+
+
 kickButton.addEventListener('click', async () => {
-       // const target = targetInput.value;
-     //  await kickUser(target);
-        const packetID = generatePacketID();
-        const mucPageNum = 1; 
 
-     const listRequest = {
-            handler: 'room_info',
-            type: public_rooms,
-            id: packetID,
-            page: mucPageNum
-        };
-        await sendMessageToSocket(listRequest);
+ const target = targetInput.value;
+    await kickUser(target);
 
-    });
+});
+
 
     banButton.addEventListener('click', async () => {
         const target = targetInput.value;
@@ -96,19 +103,13 @@ kickButton.addEventListener('click', async () => {
     });
 
      sendMessageButton.addEventListener('click', async () => {
-        const message = messageInput.value;
-        await sendMessage(message);
+      //  const message = messageInput.value;
+       // await sendMessage(message);
+
+     const captchaValue = captchaTextbox.value;
+ await sendCaptcha(captchaValue, captchaUrls);
+
     });
-  sendCaptchaButton.addEventListener('click', async () => {
-    // Retrieve captcha code and URL from input fields
-    const messageInput = document.getElementById('message').value;
-    const captchaUrl = document.getElementById('captchaUrl').value;
-
-    console.log('Button clicked. Captcha:', messageInput, 'Captcha URL:', captchaUrl);  // Debug statement
-
-    // Call the sendCaptcha function with the retrieved values
-    await sendCaptcha(messageInput, captchaUrl);
-});
 
    function addMessageToChatbox(username, message, avatarUrl) {
         const messageElement = document.createElement('div');
@@ -155,6 +156,10 @@ spinCheckbox.addEventListener('change', () => {
             messageInput.value += emoji;
         }
     });
+
+
+
+
 
    async function connectWebSocket(username, password) {
         statusDiv.textContent = 'Connecting to server...';
@@ -262,8 +267,8 @@ async function sendCaptcha(captcha, captchaUrl) {
     if (isConnected) {
         const messageData = {
             handler: 'room_join_captcha',
-            id: generatePacketID(),  // Assuming generatePacketID() is a function that generates a unique packet ID
-            name: document.getElementById('room').value, // Assuming 'name' should be the room's name
+            id: generatePacketID(),  
+            name: document.getElementById('room').value, 
             password: '',  // Empty password
             c_code: captcha,  // The captcha code
             c_id: '',  // Empty captcha ID
@@ -304,15 +309,20 @@ async function chat(to, body) {
     }
 
 
+function generatePacketID() {
+    packetIdNum += 1;
+    return `R.U.BULAN©pinoy-2023®#${packetIdNum.toString().padStart(3, '0')}`;
+}
+ 
 
-    function generatePacketID() {
-        packetIdNum += 1;
-        return packetIdNum.toString();
-    }
+
+
+
 
   function processReceivedMessage(message) {
     console.log('Received message:', message);
     debugBox.value += `${message}\n`;
+
 
     try {
         const jsonDict = JSON.parse(message);
@@ -324,6 +334,7 @@ async function chat(to, body) {
                 handleLoginEvent(jsonDict);
             } else if (handler === 'room_event') {
                 handleRoomEvent(jsonDict);
+
             } else if (handler === 'chat_message') {
                 //   displayChatMessage(jsonDict);
             } else if (handler === 'presence') {
@@ -348,6 +359,8 @@ async function chat(to, body) {
                 onFollowersList(jsonDict);
             } else if (handler === 'room_info') {
               handleMucList(jsonDict);
+ } else if (handler === 'profile_other') {
+              handleprofother(jsonDict);
             } else {
                 console.log('Unknown handler:', handler);
             }
@@ -359,7 +372,59 @@ async function chat(to, body) {
 
 
 
+//  obj2 = New With {Key .handler = "room_message", Key .type = "image", Key .id = packetID, Key .url = imageUrl, Key .room = [to], Key .body = "", Key .length = "0"}
+           
 
+
+
+
+   async function sendimage(url) {
+        if (isConnected) {
+            const messageData = {
+                handler: 'room_message',
+                type: 'image',
+                id: generatePacketID(),
+                body: '',
+                room: document.getElementById('room').value,
+                url: url,
+                length: '0'
+            };
+            await sendMessageToSocket(messageData);
+        } else {
+            statusDiv.textContent = 'Not connected to server';
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+async function handleprofother(messageObj) {
+    const username = messageObj.type;
+    const profurl = messageObj.photo_url;
+    const views = messageObj.views;
+    const status = messageObj.status;
+    const country = messageObj.country;
+    const creation = messageObj.reg_date;
+    const friends = messageObj.roster_count;
+
+    const messageData = {
+        username: username,
+      //  profurl: profurl, // Include profurl if needed
+        views: views,
+        status: status,
+        country: country,
+        creation: creation,
+        friends: friends
+    };
+   await sendimage(messageData);
+    await sendMessage(profurl);
+}
 
 
      function handleMucList(messageObj) {
@@ -402,7 +467,7 @@ async function handleRoomEvent(messageObj) {
     const role = messageObj.role;
     const count = messageObj.current_count;
     const roomName = messageObj.name;
-
+  
     if (type === 'you_joined') {
         displayChatMessage({ from: '', body: `**You** joined the room as ${role}` });
         statusCount.textContent = `Total User: ${count}`;
@@ -418,14 +483,22 @@ async function handleRoomEvent(messageObj) {
         // Update the user list
         userList = messageObj.users;
         updateUserListbox();
+
+
+ chatbox.removeChild(captchaImg);
+      chatbox.removeChild(captchaTextbox);
+      chatbox.removeChild(sendCaptchaButton);
+
+
+
     } else if (type === 'user_joined') {
         displayChatMessage({ from: userName, body: `joined the room as ${role}`, role }, 'green');
 
-       statusCount.textContent = `Total User: ${count}`;
-       
-       if (userName === 'prateek'){
-await setRole(userName, 'outcast');
-}
+ statusCount.textContent = `Total User: ${count}`;
+        if (userName === 'prateek') {
+            await setRole(userName, 'outcast');
+        }
+
         if (sendWelcomeMessages) {
             const welcomeMessages = [
                 `welcome ${userName}`,
@@ -444,7 +517,7 @@ await setRole(userName, 'outcast');
         updateUserListbox();
     } else if (type === 'user_left') {
         displayChatMessage({ from: userName, body: 'left the room.', role }, 'darkgreen');
-statusCount.textContent = `Total User: ${count}`;
+ statusCount.textContent = `Total User: ${count}`;
         if (sendWelcomeMessages) {
             const goodbyeMessage = `Bye ${userName}!`;
             await sendMessage(goodbyeMessage);
@@ -465,32 +538,38 @@ statusCount.textContent = `Total User: ${count}`;
         avatar: messageObj.avatar_url
     });
 
+
+
+ const masterUsernames = masterInput.value.split('#').map(username => username.trim());
+
+    if (masterUsernames.includes(from)) {
+
     if (body === '+wc') {
-        if (masterInput.value === from) {
+     
             welcomeCheckbox.checked = true;
             sendWelcomeMessages = true;
             await sendMessage('Welcome messages activated.');
-        }
+     
     } else if (body === '-wc') {
-        if (masterInput.value === from) {
+       
             welcomeCheckbox.checked = false;
             sendWelcomeMessages = false;
             await sendMessage('Welcome messages deactivated.');
-        }
+      
     }
 
     if (body === '+spin') {
-        if (masterInput.value === from) {
+     
             spinCheckbox.checked = true;
             sendspinMessages = true;
             await sendMessage('Spin Activated.');
-        }
+      
     } else if (body === '-spin') {
-        if (masterInput.value === from) {
+      
             spinCheckbox.checked = false;
             sendspinMessages = false;
             await sendMessage('Spin Deactivated.');
-        }
+      
     }
 
     if (sendspinMessages && body === '.s') {
@@ -519,57 +598,75 @@ statusCount.textContent = `Total User: ${count}`;
                 } else {
                     await sendMessage(randomResponse);
                 }
-            }
+
+      }      } else {
+  console.log('Command from unauthorized user:', from);
+
+ if (body === 'p@') {
+ const username = body.slice(2);
+ const message = {
+        handler: 'profile_other',
+        type: username,
+        id: packetID,     
+    };
+ await sendMessageToSocket(message);
+}
 
 
 
 
- } else if (type === 'image') {
-      const bodyurl = messageObj.url;
+
+}
+// Dim obj2 As Object = New With {Key .handler = "profile_other", Key .id = Me.PacketID, Key .type = username}
+
+    } else if (type === 'image') {
+        const bodyurl = messageObj.url;
         const from = messageObj.from;
-    const avatar = messageObj.avatar_url;
-       // displayChatMessage({ from, body, role: messageObj.role });
- displayChatMessage({
-                    from: messageObj.from,
-                    bodyurl: messageObj.url,
-                    role: messageObj.role,
-                    avatar: messageObj.avatar_url  // Pass avatar URL here
-                });
+        const avatar = messageObj.avatar_url;
 
-} else if (type === 'audio') {
-      const bodyurl = messageObj.url;
+        displayChatMessage({
+            from: messageObj.from,
+            bodyurl: messageObj.url,
+            role: messageObj.role,
+            avatar: messageObj.avatar_url
+        });
+    } else if (type === 'audio') {
+        const bodyurl = messageObj.url;
         const from = messageObj.from;
-    const avatar = messageObj.avatar_url;
-       // displayChatMessage({ from, body, role: messageObj.role });
- displayChatMessage({
-                    from: messageObj.from,
-                    bodyurl: messageObj.url,
-                    role: messageObj.role,
-                    avatar: messageObj.avatar_url  // Pass avatar URL here
-                });
+        const avatar = messageObj.avatar_url;
 
-} else 
-if (type === 'room_needs_captcha') {
-    const captchaUrl = messageObj.captcha_url;
+        displayChatMessage({
+            from: messageObj.from,
+            bodyurl: messageObj.url,
+            role: messageObj.role,
+            avatar: messageObj.avatar_url
+        });
+    } else      if (type === 'room_needs_captcha') {
+            const captchaUrl = messageObj.captcha_url;
 
-    // Create a new image element
-    const captchaImg = document.createElement('img');
+    // Create captcha image element
+    captchaImg = document.createElement('img');
     captchaImg.src = captchaUrl;
-    captchaImg.style.maxWidth = '200px'; // Set maximum width for the image (adjust as needed)
+    captchaImg.style.maxWidth = '200px'; 
+captchaUrls = captchaUrl;
+    // Create textbox for entering captcha text
+  captchaTextbox = document.createElement('input');
+   captchaTextbox.type = 'text';
+   captchaTextbox.placeholder = 'Enter Captcha';
 
-    // Append the image element to the chatbox
+    // Create button for sending captcha
+   sendCaptchaButton = document.createElement('button');
+    sendCaptchaButton.textContent = 'Send Captcha';
+
+    // Append captcha image, textbox, and button to the chatbox
+    chatbox.innerHTML = ''; // Clear previous captcha images if any
     chatbox.appendChild(captchaImg);
+    chatbox.appendChild(captchaTextbox);
+    chatbox.appendChild(sendCaptchaButton);
     chatbox.scrollTop = chatbox.scrollHeight;
 
-    // Optionally, display the URL as text
-  // const captchaText = document.createElement('span');
- //captchaText.textContent = 'Captcha URL: ' + captchaUrl;
 
-    // Append the text element to the chatbox
-   // chatbox.appendChild(captchaText);
-captchaUrlInput.value = captchaUrl ;
-}
- else if (type === 'role_changed') {
+    } else if (type === 'role_changed') {
         const oldRole = messageObj.old_role;
         const newRole = messageObj.new_role;
         const user = messageObj.t_username;
@@ -593,8 +690,27 @@ captchaUrlInput.value = captchaUrl ;
         } else {
             statusDiv.textContent = 'Error creating room.';
         }
+
+} else if (type === 'room_needs_password') {
+  const room = document.getElementById('room').value;
+  displayChatMessage({
+        from: room,
+        body: 'Room is locked!',
+        color: 'red'
+    });
+
     }
+
+
+
+
+
+
+
 }
+
+
+
 
 function displayChatMessage(messageObj, color = 'black') {
     const { from, body, bodyurl, role, avatar } = messageObj;
@@ -657,6 +773,17 @@ function displayRoomSubject(subject) {
     chatbox.appendChild(newMessage);
     chatbox.scrollTop = chatbox.scrollHeight;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 function getRoleColor(role) {
     switch (role) {
