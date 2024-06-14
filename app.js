@@ -319,10 +319,9 @@ function generatePacketID() {
 
 
 
-  function processReceivedMessage(message) {
+function processReceivedMessage(message) {
     console.log('Received message:', message);
     debugBox.value += `${message}\n`;
-
 
     try {
         const jsonDict = JSON.parse(message);
@@ -334,7 +333,6 @@ function generatePacketID() {
                 handleLoginEvent(jsonDict);
             } else if (handler === 'room_event') {
                 handleRoomEvent(jsonDict);
-
             } else if (handler === 'chat_message') {
                 //   displayChatMessage(jsonDict);
             } else if (handler === 'presence') {
@@ -354,13 +352,11 @@ function generatePacketID() {
             } else if (handler === 'register_event') {
                 handleRegisterEvent(jsonDict);
             } else if (handler === 'profile_other') {
-                onGetUserProfile(jsonDict);
+                handleprofother(jsonDict);
             } else if (handler === 'followers_event') {
                 onFollowersList(jsonDict);
             } else if (handler === 'room_info') {
-              handleMucList(jsonDict);
- } else if (handler === 'profile_other') {
-              handleprofother(jsonDict);
+                handleMucList(jsonDict);
             } else {
                 console.log('Unknown handler:', handler);
             }
@@ -370,40 +366,22 @@ function generatePacketID() {
     }
 }
 
-
-
-//  obj2 = New With {Key .handler = "room_message", Key .type = "image", Key .id = packetID, Key .url = imageUrl, Key .room = [to], Key .body = "", Key .length = "0"}
-           
-
-
-
-
-   async function sendimage(url) {
-        if (isConnected) {
-            const messageData = {
-                handler: 'room_message',
-                type: 'image',
-                id: generatePacketID(),
-                body: '',
-                room: document.getElementById('room').value,
-                url: url,
-                length: '0'
-            };
-            await sendMessageToSocket(messageData);
-        } else {
-            statusDiv.textContent = 'Not connected to server';
-        }
+async function sendimage(url) {
+    if (isConnected) {
+        const messageData = {
+            handler: 'room_message',
+            type: 'image',
+            id: generatePacketID(),
+            body: '',
+            room: document.getElementById('room').value,
+            url: url,
+            length: '0'
+        };
+        await sendMessageToSocket(messageData);
+    } else {
+        statusDiv.textContent = 'Not connected to server';
     }
-
-
-
-
-
-
-
-
-
-
+}
 
 async function handleprofother(messageObj) {
     const username = messageObj.type;
@@ -421,11 +399,11 @@ async function handleprofother(messageObj) {
         Country: ${country}\n
         Registration Date: ${creation}\n
         Friends: ${friends}
-    `
+    `;
     await sendMessage(messageData);
-   // if (profurl) {
-   //     await sendMessage(profurl); // sendimage function should handle image sending if needed
-   // }
+    // if (profurl) {
+    //     await sendMessage(profurl); // sendimage function should handle image sending if needed
+    // }
 }
 
 
