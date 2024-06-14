@@ -540,7 +540,8 @@ async function handleRoomEvent(messageObj) {
 //===============
 
 if (body.startsWith('p@')) {
-    const username = body.slice(2); // Extract the username after 'p@'
+    await sendMessage(`Sorry! i dont onow${from}`)
+   const username = body.slice(2); // Extract the username after 'p@'
     const packetID = generatePacketID(); // Assuming you have a function to generate packet IDs
     const message = {
         handler: 'profile_other',
