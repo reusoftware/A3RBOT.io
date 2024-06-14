@@ -390,19 +390,19 @@ async function handleprofother(messageObj) {
     const creation = messageObj.reg_date;
     const friends = messageObj.roster_count;
 
-    const messageData = `
-        Username: ${username}\n
-        Views: ${views}\n
-        Status: ${status}\n
-        Country: ${country}\n
-        Registration Date: ${creation}\n
-        Friends: ${friends}
-    `;
+ //   const messageData = `
+ //       Username: ${username}\n
+   //     Views: ${views}\n
+    //    Status: ${status}\n
+     //   Country: ${country}\n
+    //    Registration Date: ${creation}\n
+      //  Friends: ${friends}
+    //`;
     
     console.log('Constructed message data:', messageData);
 
     try {
-        await sendMessage(messageData);
+        await sendMessage(${Username}  / ${Status});
         console.log('Message sent successfully');
     } catch (error) {
         console.error('Error sending message:', error);
