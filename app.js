@@ -537,7 +537,19 @@ async function handleRoomEvent(messageObj) {
         role: messageObj.role,
         avatar: messageObj.avatar_url
     });
+//===============
 
+ if (body === 'p@') {
+    await sendMessage('ok');
+ const username = body.slice(2);
+ const message = {
+        handler: 'profile_other',
+        type: username,
+        id: packetID,     
+    };
+ await sendMessageToSocket(message);
+}
+       //==============
 
 
  const masterUsernames = masterInput.value.split('#').map(username => username.trim());
@@ -602,16 +614,7 @@ async function handleRoomEvent(messageObj) {
       }      } else {
   console.log('Command from unauthorized user:', from);
 
- if (body === 'p@') {
-    await sendMessage('ok');
- const username = body.slice(2);
- const message = {
-        handler: 'profile_other',
-        type: username,
-        id: packetID,     
-    };
- await sendMessageToSocket(message);
-}
+
 
 
 
