@@ -397,7 +397,7 @@ async function handleprofother(messageObj) {
     const creation = messageObj.reg_date;
     const friends = messageObj.roster_count;
 
-
+ await sendimage(profurl);
 }
 
 
