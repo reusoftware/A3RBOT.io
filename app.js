@@ -84,8 +84,10 @@ kickButton.addEventListener('click', async () => {
 
 
     banButton.addEventListener('click', async () => {
-        const target = targetInput.value;
-        await setRole(target, 'outcast');
+     //   const target = targetInput.value;
+      //  await setRole(target, 'outcast');
+         const message = messageInput.value;
+       await sendimage(message);
     });
 
     loginButton.addEventListener('click', async () => {
@@ -107,8 +109,8 @@ kickButton.addEventListener('click', async () => {
 
      sendMessageButton.addEventListener('click', async () => {
      const message = messageInput.value;
-   //  await sendMessage(message);
-await sendimage(message);
+ await sendMessage(message);
+
 
 
     });
