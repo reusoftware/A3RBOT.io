@@ -12,7 +12,7 @@ let captchaUrls = "";
 //   let captchaImg;
 //   let captchaTextbox;
  //  let sendCaptchaButton;
-//let captchaImg, captchaTextbox, sendcaptchaButton;
+let captchaImg, captchaTextbox, sendcaptchaButton;
 //=======================
 
  
@@ -43,7 +43,7 @@ const ownerButton = document.getElementById('ownerButton');
 const noneButton = document.getElementById('noneButton');
  const masterInput = document.getElementById('master');
    const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
-const sendcaptchaButton = document.getElementById('sendcaptchaButton');
+const captchaButton = document.getElementById('captchaButton');
 
 
 
@@ -52,7 +52,7 @@ const sendcaptchaButton = document.getElementById('sendcaptchaButton');
 
 
 
-sendcaptchaButton.addEventListener('click', async () => {
+captchaButton.addEventListener('click', async () => {
       const captchaValue = captchaTextbox.value;
  await sendCaptcha(captchaValue, captchaUrls);
    
