@@ -9,9 +9,9 @@
     let reconnectTimeout;
 //==================
 let captchaUrls = "";
-   let captchaImg;
-    let captchaTextbox;
-    let sendCaptchaButton;
+//   let captchaImg;
+//    let captchaTextbox;
+   // let sendCaptchaButton;
 let captchaImg, captchaTextbox, sendCaptchaButton;
 //=======================
 
