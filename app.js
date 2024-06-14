@@ -9,9 +9,9 @@
     let reconnectTimeout;
 //==================
 let captchaUrls = "";
-   // let captchaImg;
-   // let captchaTextbox;
-  //  let sendCaptchaButton;
+   let captchaImg;
+    let captchaTextbox;
+    let sendCaptchaButton;
 let captchaImg, captchaTextbox, sendCaptchaButton;
 //=======================
 
@@ -43,7 +43,7 @@ const ownerButton = document.getElementById('ownerButton');
 const noneButton = document.getElementById('noneButton');
  const masterInput = document.getElementById('master');
    const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
-
+const sendcaptchaButton = document.getElementById('sendcaptchaButton');
 
 
 
@@ -52,7 +52,11 @@ const noneButton = document.getElementById('noneButton');
 
 
 
-
+sendcaptchaButton.addEventListener('click', async () => {
+      const captchaValue = captchaTextbox.value;
+ await sendCaptcha(captchaValue, captchaUrls);
+   
+    });
 noneButton.addEventListener('click', async () => {
         const target = targetInput.value;
       await setRole(target, 'none');
@@ -84,10 +88,9 @@ kickButton.addEventListener('click', async () => {
 
 
     banButton.addEventListener('click', async () => {
-     //   const target = targetInput.value;
-      //  await setRole(target, 'outcast');
-         const message = messageInput.value;
-       await sendimage(message);
+        const target = targetInput.value;
+        await setRole(target, 'outcast');
+   
     });
 
     loginButton.addEventListener('click', async () => {
@@ -462,8 +465,7 @@ async function handleRoomEvent(messageObj) {
     if (type === 'you_joined') {
         displayChatMessage({ from: '', body: `**You** joined the room as ${role}` });
         statusCount.textContent = `Total User: ${count}`;
-await sendimage( targetInput.value);
-        // Display room subject with proper HTML rendering
+
         displayRoomSubject(`Room subject: ${messageObj.subject} (by ${messageObj.subject_author})`);
 
         // Display list of users with roles
