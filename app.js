@@ -393,16 +393,7 @@ async function handleprofother(messageObj) {
     const creation = messageObj.reg_date;
     const friends = messageObj.roster_count;
 
- //   const messageData = `
- //       Username: ${username}\n
-   //     Views: ${views}\n
-    //    Status: ${status}\n
-     //   Country: ${country}\n
-    //    Registration Date: ${creation}\n
-      //  Friends: ${friends}
-    //`;
-    
- 
+
 }
 
 
