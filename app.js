@@ -317,8 +317,6 @@ function generatePacketID() {
 
 
 
-
-
 function processReceivedMessage(message) {
     console.log('Received message:', message);
     debugBox.value += `${message}\n`;
@@ -328,34 +326,49 @@ function processReceivedMessage(message) {
 
         if (jsonDict) {
             const handler = jsonDict.handler;
+            console.log('Handler:', handler);
 
             if (handler === 'login_event') {
+                console.log('Handling login_event');
                 handleLoginEvent(jsonDict);
             } else if (handler === 'room_event') {
+                console.log('Handling room_event');
                 handleRoomEvent(jsonDict);
             } else if (handler === 'chat_message') {
+                console.log('Handling chat_message');
                 //   displayChatMessage(jsonDict);
             } else if (handler === 'presence') {
+                console.log('Handling presence');
                 onUserProfileUpdates(jsonDict);
             } else if (handler === 'group_invite') {
+                console.log('Handling group_invite');
                 onMucInvitation(jsonDict.inviter, jsonDict.name, 'private');
             } else if (handler === 'user_online' || handler === 'user_offline') {
+                console.log('Handling user_online or user_offline');
                 onUserPresence(jsonDict);
             } else if (handler === 'muc_event') {
+                console.log('Handling muc_event');
                 handleMucEvent(jsonDict);
             } else if (handler === 'last_activity') {
+                console.log('Handling last_activity');
                 onUserActivityResult(jsonDict);
             } else if (handler === 'roster') {
+                console.log('Handling roster');
                 onRoster(jsonDict);
             } else if (handler === 'friend_requests') {
+                console.log('Handling friend_requests');
                 onFriendRequest(jsonDict);
             } else if (handler === 'register_event') {
+                console.log('Handling register_event');
                 handleRegisterEvent(jsonDict);
             } else if (handler === 'profile_other') {
+                console.log('Handling profile_other');
                 handleprofother(jsonDict);
             } else if (handler === 'followers_event') {
+                console.log('Handling followers_event');
                 onFollowersList(jsonDict);
             } else if (handler === 'room_info') {
+                console.log('Handling room_info');
                 handleMucList(jsonDict);
             } else {
                 console.log('Unknown handler:', handler);
@@ -365,6 +378,33 @@ function processReceivedMessage(message) {
         console.error('Error processing received message:', ex);
     }
 }
+
+async function handleprofother(messageObj) {
+    console.error('Detect handle profile other');
+    const username = messageObj.type;
+    const profurl = messageObj.photo_url;
+    const views = messageObj.views;
+    const status = messageObj.status;
+    const country = messageObj.country;
+    const creation = messageObj.reg_date;
+    const friends = messageObj.roster_count;
+
+    const messageData = `
+        Username: ${username}\n
+        Views: ${views}\n
+        Status: ${status}\n
+        Country: ${country}\n
+        Registration Date: ${creation}\n
+        Friends: ${friends}
+    `;
+    await sendMessage(messageData);
+    // if (profurl) {
+    //     await sendMessage(profurl); // sendimage function should handle image sending if needed
+    // }
+}
+
+
+
 
 async function sendimage(url) {
     if (isConnected) {
@@ -383,28 +423,6 @@ async function sendimage(url) {
     }
 }
 
-async function handleprofother(messageObj) {
-    const username = messageObj.type;
-    const profurl = messageObj.photo_url;
-    const views = messageObj.views;
-    const status = messageObj.status;
-    const country = messageObj.country;
-    const creation = messageObj.reg_date;
-    const friends = messageObj.roster_count;
- console.error('detect handle pofilr other');
-    const messageData = `
-        Username: ${username}\n
-        Views: ${views}\n
-        Status: ${status}\n
-        Country: ${country}\n
-        Registration Date: ${creation}\n
-        Friends: ${friends}
-    `;
-    await sendMessage(messageData);
-    // if (profurl) {
-    //     await sendMessage(profurl); // sendimage function should handle image sending if needed
-    // }
-}
 
 
      function handleMucList(messageObj) {
