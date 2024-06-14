@@ -402,24 +402,7 @@ async function handleprofother(messageObj) {
       //  Friends: ${friends}
     //`;
     
-    console.log('Constructed message data:', messageData);
-
-    try {
-        await sendMessage(${Username}  / ${Status});
-        console.log('Message sent successfully');
-    } catch (error) {
-        console.error('Error sending message:', error);
-    }
-
-    // Optionally send the profile URL as an image message
-    if (profurl) {
-        try {
-            await sendMessage(profurl); // Assuming sendMessage can handle URLs as well
-            console.log('Profile URL sent successfully');
-        } catch (error) {
-            console.error('Error sending profile URL:', error);
-        }
-    }
+ 
 }
 
 
@@ -432,7 +415,7 @@ async function sendimage(url) {
             id: generatePacketID(),
             body: '',
             room: document.getElementById('room').value,
-            url: 'https://cdn.chatp.net/p/555639118260/009735448224131.png',
+            url: url,
             length: '0'
         };
         await sendMessageToSocket(messageData);
