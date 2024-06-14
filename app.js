@@ -12,7 +12,7 @@ let captchaUrls = "";
 //   let captchaImg;
 //   let captchaTextbox;
  //  let sendCaptchaButton;
-let captchaImg, captchaTextbox, sendcaptchaButton;
+//let captchaImg, captchaTextbox, sendcaptchaButton;
 //=======================
 
  
