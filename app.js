@@ -404,7 +404,7 @@ function generatePacketID() {
 
 
 
-//async function handleprofother(messageObj) {
+
 async function handleprofother(messageObj) {
     const username = messageObj.type;
     const profurl = messageObj.photo_url;
@@ -421,12 +421,11 @@ async function handleprofother(messageObj) {
         Country: ${country}\n
         Registration Date: ${creation}\n
         Friends: ${friends}
-    `;
-
+    `
     await sendMessage(messageData);
-    if (profurl) {
-        await sendMessage(profurl); // sendimage function should handle image sending if needed
-    }
+   // if (profurl) {
+   //     await sendMessage(profurl); // sendimage function should handle image sending if needed
+   // }
 }
 
 
