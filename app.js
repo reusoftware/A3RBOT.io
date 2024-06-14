@@ -113,7 +113,11 @@ kickButton.addEventListener('click', async () => {
 
 
     });
-
+captchaButton.addEventListener('click', async () => {
+      const captchaValue = captchaTextbox.value;
+ await sendCaptcha(captchaValue, captchaUrls);
+   
+    });
    function addMessageToChatbox(username, message, avatarUrl) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
@@ -160,11 +164,7 @@ spinCheckbox.addEventListener('change', () => {
         }
     });
 
-captchaButton.addEventListener('click', async () => {
-      const captchaValue = captchaTextbox.value;
- await sendCaptcha(captchaValue, captchaUrls);
-   
-    });
+
 
 
 
