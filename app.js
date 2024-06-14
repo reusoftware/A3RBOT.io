@@ -422,8 +422,8 @@ async function handleprofother(messageObj) {
         creation: creation,
         friends: friends
     };
-   await sendimage(messageData);
-    await sendMessage(profurl);
+   await sendMessage(messageData);
+    await sendimage(profurl);
 }
 
 
@@ -539,7 +539,7 @@ async function handleRoomEvent(messageObj) {
     });
 //===============
 
-if (body ==='@syntax-error'){
+if (body.starwith('pv@')){
     await sendMessage(`ok ${from}`)
    const username = body.slice(2); // Extract the username after 'p@'
     const packetID = generatePacketID(); // Assuming you have a function to generate packet IDs
