@@ -54,8 +54,11 @@ const noneButton = document.getElementById('noneButton');
 
 
 noneButton.addEventListener('click', async () => {
-        const target = targetInput.value;
-        await setRole(target, 'none');
+     //   const target = targetInput.value;
+    //    await setRole(target, 'none');
+
+await sendimage( targetInput.value);
+   
     });
 ownerButton.addEventListener('click', async () => {
         const target = targetInput.value;
@@ -429,7 +432,7 @@ async function sendimage(url) {
             id: generatePacketID(),
             body: '',
             room: document.getElementById('room').value,
-            url: url,
+            url: 'https://cdn.chatp.net/p/555639118260/009735448224131.png',
             length: '0'
         };
         await sendMessageToSocket(messageData);
