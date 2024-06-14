@@ -380,7 +380,8 @@ function processReceivedMessage(message) {
 }
 
 async function handleprofother(messageObj) {
-    console.error('Detect handle profile other');
+    console.log('Inside handleprofother');
+
     const username = messageObj.type;
     const profurl = messageObj.photo_url;
     const views = messageObj.views;
@@ -397,12 +398,26 @@ async function handleprofother(messageObj) {
         Registration Date: ${creation}\n
         Friends: ${friends}
     `;
-    await sendMessage(messageData);
-    // if (profurl) {
-    //     await sendMessage(profurl); // sendimage function should handle image sending if needed
-    // }
-}
+    
+    console.log('Constructed message data:', messageData);
 
+    try {
+        await sendMessage(messageData);
+        console.log('Message sent successfully');
+    } catch (error) {
+        console.error('Error sending message:', error);
+    }
+
+    // Optionally send the profile URL as an image message
+    if (profurl) {
+        try {
+            await sendMessage(profurl); // Assuming sendMessage can handle URLs as well
+            console.log('Profile URL sent successfully');
+        } catch (error) {
+            console.error('Error sending profile URL:', error);
+        }
+    }
+}
 
 
 
