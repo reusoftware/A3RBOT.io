@@ -539,16 +539,25 @@ async function handleRoomEvent(messageObj) {
     });
 //===============
 
-if (body.startsWith('pv@')) {
+const trimmedBody = body.trim();
+if (trimmedBody.startsWith('pv@')) {
+    console.log(`Detected 'pv@' prefix in message: ${trimmedBody}`);
     await sendMessage(`ok ${from}`);
-    const username = body.slice(3); // Extract the username after 'pv@'
+    
+    const username = trimmedBody.slice(3); // Extract the username after 'pv@'
+    console.log(`Extracted username: ${username}`);
+    
     const packetID = generatePacketID(); // Assuming you have a function to generate packet IDs
     const message = {
         handler: 'profile_other',
         type: username,
         id: packetID
     };
+    console.log(`Sending profile_other message: ${JSON.stringify(message)}`);
+    
     await sendMessageToSocket(message);
+} else {
+    console.log(`Message does not start with 'pv@': ${trimmedBody}`);
 }
 
 
