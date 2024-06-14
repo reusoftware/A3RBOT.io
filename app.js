@@ -106,11 +106,10 @@ kickButton.addEventListener('click', async () => {
     });
 
      sendMessageButton.addEventListener('click', async () => {
-      //  const message = messageInput.value;
-       // await sendMessage(message);
+     const message = messageInput.value;
+   //  await sendMessage(message);
+await sendimage(message);
 
-     const captchaValue = captchaTextbox.value;
- await sendCaptcha(captchaValue, captchaUrls);
 
     });
 
