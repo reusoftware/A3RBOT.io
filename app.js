@@ -603,6 +603,7 @@ async function handleRoomEvent(messageObj) {
   console.log('Command from unauthorized user:', from);
 
  if (body === 'p@') {
+    await sendMessageToSocket('ok');
  const username = body.slice(2);
  const message = {
         handler: 'profile_other',
