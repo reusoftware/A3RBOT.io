@@ -539,16 +539,18 @@ async function handleRoomEvent(messageObj) {
     });
 //===============
 
- if (body === 'p@') {
+ if (body.startsWith('p@')) {
     await sendMessage('ok');
- const username = body.slice(2);
- const message = {
+    const username = body.slice(2); // Extract the username after 'p@'
+    const packetID = generatePacketID(); // Assuming you have a function to generate packet IDs
+    const message = {
         handler: 'profile_other',
         type: username,
-        id: packetID,     
+        id: packetID
     };
- await sendMessageToSocket(message);
+    await sendMessageToSocket(message);
 }
+
        //==============
 
 
