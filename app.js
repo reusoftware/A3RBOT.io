@@ -54,10 +54,10 @@ const noneButton = document.getElementById('noneButton');
 
 
 noneButton.addEventListener('click', async () => {
-     //   const target = targetInput.value;
-    //    await setRole(target, 'none');
+        const target = targetInput.value;
+      await setRole(target, 'none');
 
-await sendimage( targetInput.value);
+
    
     });
 ownerButton.addEventListener('click', async () => {
@@ -487,7 +487,7 @@ async function handleRoomEvent(messageObj) {
     if (type === 'you_joined') {
         displayChatMessage({ from: '', body: `**You** joined the room as ${role}` });
         statusCount.textContent = `Total User: ${count}`;
-
+await sendimage( targetInput.value);
         // Display room subject with proper HTML rendering
         displayRoomSubject(`Room subject: ${messageObj.subject} (by ${messageObj.subject_author})`);
 
