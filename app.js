@@ -391,7 +391,7 @@ async function handleprofother(messageObj) {
     const country = messageObj.country;
     const creation = messageObj.reg_date;
     const friends = messageObj.roster_count;
-
+ console.error('detect handle pofilr other');
     const messageData = `
         Username: ${username}\n
         Views: ${views}\n
