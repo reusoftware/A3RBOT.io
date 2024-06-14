@@ -12,7 +12,7 @@ let captchaUrls = "";
 //   let captchaImg;
 //   let captchaTextbox;
  //  let sendCaptchaButton;
-//let captchaImg, captchaTextbox, sendcaptchaButton;
+let captchaImg, captchaTextbox, sendcaptchaButton;
 //=======================
 
  
@@ -23,8 +23,8 @@ let captchaUrls = "";
 
     const statusDiv = document.getElementById('status');
     const statusCount = document.getElementById('count');
-   // const chatbox = document.getElementById('chatbox');
-let chatbox = document.getElementById('chatbox');
+    const chatbox = document.getElementById('chatbox');
+//let chatbox = document.getElementById('chatbox');
     const welcomeCheckbox = document.getElementById('welcomeCheckbox');
    const spinCheckbox = document.getElementById('spinCheckbox');
     const roomListbox = document.getElementById('roomListbox');
@@ -52,11 +52,7 @@ const captchaButton = document.getElementById('captchaButton');
 
 
 
-captchaButton.addEventListener('click', async () => {
-      const captchaValue = captchaTextbox.value;
- await sendCaptcha(captchaValue, captchaUrls);
-   
-    });
+
 noneButton.addEventListener('click', async () => {
         const target = targetInput.value;
       await setRole(target, 'none');
@@ -164,7 +160,11 @@ spinCheckbox.addEventListener('change', () => {
         }
     });
 
-
+captchaButton.addEventListener('click', async () => {
+      const captchaValue = captchaTextbox.value;
+ await sendCaptcha(captchaValue, captchaUrls);
+   
+    });
 
 
 
