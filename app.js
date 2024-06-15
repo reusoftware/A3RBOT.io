@@ -396,10 +396,18 @@ async function handleprofother(messageObj) {
     const country = messageObj.country;
     const creation = messageObj.reg_date;
     const friends = messageObj.roster_count;
+if (profurl === ''){
 
+} else{
  await sendimage(profurl);
+await sendMessage('Username : ${username}/n Status : ${status} Views : ${views} ');
+};
+   
 }
 
+   
+   await sendMessage('Username : ${username}/n Status : ${status} Views : ${views} ');
+}
 
 
 async function sendimage(url) {
