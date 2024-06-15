@@ -21,7 +21,7 @@ let captchaImg, captchaTextbox;
     const joinRoomButton = document.getElementById('joinRoomButton');
     const leaveRoomButton = document.getElementById('leaveRoomButton');
     const sendMessageButton = document.getElementById('sendMessageButton');
-
+  const statusroom = document.getElementById('statusroom');
     const statusDiv = document.getElementById('status');
     const statusCount = document.getElementById('count');
     const chatbox = document.getElementById('chatbox');
@@ -220,6 +220,7 @@ spinCheckbox.addEventListener('change', () => {
                 id: generatePacketID(),
                 name: roomName
             };
+             
             await sendMessageToSocket(joinMessage);
             await fetchUserList(roomName);
             await chat('syntax-error', 'your message here');
@@ -235,7 +236,9 @@ spinCheckbox.addEventListener('change', () => {
     function rejoinRoomIfNecessary() {
         const room = document.getElementById('room').value;
         if (room) {
+           
             joinRoom(room);
+                 statusroom.textContent = `You Re-join the room: ${roomName}`;
         }
     }
 
@@ -248,7 +251,7 @@ spinCheckbox.addEventListener('change', () => {
                 name: roomName
             };
             await sendMessageToSocket(leaveMessage);
-            statusDiv.textContent = `You left the room: ${roomName}`;
+            statusroom.textContent = `You left the room: ${roomName}`;
         } else {
             statusDiv.textContent = 'Not connected to server';
         }
@@ -503,7 +506,7 @@ async function handleRoomEvent(messageObj) {
     if (type === 'you_joined') {
         displayChatMessage({ from: '', body: `**You** joined the room as ${role}` });
         statusCount.textContent = `Total User: ${count}`;
-
+      statusroom.textContent = `You Join the room: ${roomName}`;
         displayRoomSubject(`Room subject: ${messageObj.subject} (by ${messageObj.subject_author})`);
 
         // Display list of users with roles
