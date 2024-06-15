@@ -386,35 +386,44 @@ function processReceivedMessage(message) {
     }
 }
 
+
 async function handleprofother(messageObj) {
-    console.log('Inside handleprofother');
+    try {
+        console.log('Inside handleprofother');
 
-    const username = messageObj.type;
-    const profurl = messageObj.photo_url;
-    const views = messageObj.views;
-    const status = messageObj.status;
-    const country = messageObj.country;
-    const creation = messageObj.reg_date;
-    const friends = messageObj.roster_count;
+        const username = messageObj.type;
+        const profurl = messageObj.photo_url;
+        const views = messageObj.views;
+        const status = messageObj.status;
+        const country = messageObj.country;
+        const creation = messageObj.reg_date;
+        const friends = messageObj.roster_count;
+        const gender = messageObj.gender;
 
-const gender = messageObj.gender;
-   
-    if (profurl !== '') {
-        await sendimage(profurl);
-   const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gender}`;
-    await sendMessage(messageData);
-   
-    }else{
-       if (username !==''){
-              await sendMessage(`User not foind`);
-       }else{
-const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}`;
-    await sendMessage(messageData);
+        if (profurl) {
+            await sendimage(profurl);
+        }
+
+        if (username) {
+            const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gender}`;
+            await sendMessage(messageData);
+        } else {
+            await sendMessage('User not found');
+        }
+    } catch (error) {
+        console.error('Error in handleprofother:', error);
     }
-    }
-    
 }
 
+
+
+
+
+
+
+
+
+      
 
 
 async function sendimage(url) {
