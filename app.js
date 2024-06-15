@@ -397,16 +397,21 @@ async function handleprofother(messageObj) {
     const creation = messageObj.reg_date;
     const friends = messageObj.roster_count;
 
+const gender = messageObj.gender;
+   
     if (profurl !== '') {
         await sendimage(profurl);
-   const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}`;
+   const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gender}`;
     await sendMessage(messageData);
    
     }else{
+       if (username !==''){
+              await sendMessage(`User not foind`);
+       }else{
 const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}`;
     await sendMessage(messageData);
     }
-
+    }
     
 }
 
