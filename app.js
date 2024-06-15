@@ -400,6 +400,9 @@ async function handleprofother(messageObj) {
         const creation = messageObj.reg_date;
         const friends = messageObj.roster_count;
         const gender = messageObj.gender;
+ const plainStatus = htmlToPlainText(status);
+
+       
 if (gender === '1'){
  gen = 'Male';
 } else if(gender ='2'){
@@ -412,8 +415,18 @@ if (gender === '1'){
         }
 
         if (username) {
-            const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gend}`;
-            await sendMessage(messageData);
+         //   const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gend}`;
+         
+           const messageData = `
+        Username: ${username}\n
+        Views: ${views}\n
+        Status: ${plainStatus}\n
+        Country: ${country}\n
+        Registration Date: ${creation}\n
+        Friends: ${friends}
+        Gender: ${gen}
+    `;
+           await sendMessage(messageData);
         } else {
             await sendMessage('User not found');
         }
@@ -425,7 +438,11 @@ if (gender === '1'){
 
 
 
-
+function htmlToPlainText(html) {
+    const tempElement = document.createElement('div');
+    tempElement.innerHTML = html;
+    return tempElement.textContent || tempElement.innerText || '';
+}
 
 
 
