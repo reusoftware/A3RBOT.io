@@ -110,7 +110,7 @@ kickButton.addEventListener('click', async () => {
      const message = messageInput.value;
  await sendMessage(message);
 
-
+messageInput.value ='';
 
     });
 captchaButton.addEventListener('click', async () => {
