@@ -957,9 +957,9 @@ function handleRoomInfoResponse(response) {
 
 
 // Function to activate the quiz
-function activateQuiz() {
-    // Add your quiz activation logic here
+async function activateQuiz() {
     console.log('Quiz activated');
+    await startQuiz();
 }
 
 // Function to deactivate the quiz
@@ -982,7 +982,6 @@ document.getElementById('deactivateQuizCheckbox').addEventListener('change', fun
     }
 });
 
-
 const quizQuestions = [
     {
         question: "What is the capital of France?",
@@ -995,7 +994,6 @@ const quizQuestions = [
         answer: "Leonardo da Vinci"
     }
 ];
-
 
 async function startQuiz() {
     for (let i = 0; i < quizQuestions.length; i++) {
@@ -1027,25 +1025,35 @@ async function startQuiz() {
     }
 }
 
-
-
-function checkAnswer(userAnswer, correctAnswer) {
-    if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
-        alert("Correct!");
+// Example implementation of sendMessage function
+async function sendMessage(message) {
+    if (isConnected) {
+        const messageData = {
+            handler: 'room_message',
+            type: 'text',
+            id: generatePacketID(),
+            body: message,
+            room: document.getElementById('room').value,
+            url: '',
+            length: '0'
+        };
+        await sendMessageToSocket(messageData);
     } else {
-        alert("Incorrect! The correct answer is: " + correctAnswer);
+        statusDiv.textContent = 'Not connected to server';
     }
 }
 
- document.getElementById('activateQuizCheckbox').addEventListener('change', async function() {
-        if (this.checked) {
-            await startQuiz();
+// Example implementation of sendMessageToSocket function
+async function sendMessageToSocket(message) {
+    return new Promise((resolve, reject) => {
+        if (isConnected && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify(message));
+            resolve();
+        } else {
+            reject(new Error('WebSocket is not connected or not open'));
         }
     });
-
-
-
-
+}
 
 
 
