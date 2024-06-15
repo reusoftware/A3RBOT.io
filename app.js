@@ -426,14 +426,6 @@ async function handleprofother(messageObj) {
     }
 }
 
-function htmlToPlainText(html) {
-    var temporalDivElement = document.createElement("div");
-    temporalDivElement.innerHTML = html;
-    return temporalDivElement.textContent || temporalDivElement.innerText || "";
-}
-
-
-
 
 
 function htmlToPlainText(html) {
