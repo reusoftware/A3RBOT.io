@@ -559,7 +559,7 @@ async function handleRoomEvent(messageObj) {
 const trimmedBody = body.trim();
 if (trimmedBody.startsWith('pv@')) {
     console.log(`Detected 'pv@' prefix in message: ${trimmedBody}`);
-    await sendMessage(`ok ${from}`);
+   // await sendMessage(`ok ${from}`);
     
     const username = trimmedBody.slice(3); // Extract the username after 'pv@'
     console.log(`Extracted username: ${username}`);
