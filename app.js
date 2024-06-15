@@ -12,7 +12,7 @@ let captchaUrls = "";
 //   let captchaImg;
 //   let captchaTextbox;
  //  let sendCaptchaButton;
-let captchaImg, captchaTextbox, sendcaptchaButton;
+let captchaImg, captchaTextbox;
 //=======================
 
  
@@ -688,10 +688,7 @@ captchaUrls = captchaUrl;
    captchaTextbox.type = 'text';
    captchaTextbox.placeholder = 'Enter Captcha';
 
-    // Create button for sending captcha
-   sendCaptchaButton = document.createElement('button');
-    sendCaptchaButton.textContent = 'Send Captcha';
-
+    
     // Append captcha image, textbox, and button to the chatbox
     chatbox.innerHTML = ''; // Clear previous captcha images if any
     chatbox.appendChild(captchaImg);
