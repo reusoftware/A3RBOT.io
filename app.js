@@ -399,10 +399,15 @@ async function handleprofother(messageObj) {
 
     if (profurl !== '') {
         await sendimage(profurl);
+   const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}`;
+    await sendMessage(messageData);
+   
+    }else{
+const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}`;
+    await sendMessage(messageData);
     }
 
-    const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}`;
-    await sendMessage(messageData);
+    
 }
 
 
