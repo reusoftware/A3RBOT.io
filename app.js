@@ -400,33 +400,24 @@ async function handleprofother(messageObj) {
         const creation = messageObj.reg_date;
         const friends = messageObj.roster_count;
         const gender = messageObj.gender;
- const plainStatus = htmlToPlainText(status);
+        const plainStatus = htmlToPlainText(status);
 
-       
-if (gender === '1'){
- gen = 'Male';
-} else if(gender ='2'){
-  gen = 'Female'; 
-}else{
-  gen = 'Unknown'; 
-}
+        let gen;
+        if (gender === '1') {
+            gen = 'Male';
+        } else if (gender === '2') {
+            gen = 'Female';
+        } else {
+            gen = 'Unknown';
+        }
+
         if (profurl) {
             await sendimage(profurl);
         }
 
         if (username) {
-         //   const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gend}`;
-         
-           const messageData = `
-        Username: ${username}\n
-        Views: ${views}\n
-        Status: ${plainStatus}\n
-        Country: ${country}\n
-        Registration Date: ${creation}\n
-        Friends: ${friends}
-        Gender: ${gen}
-    `;
-           await sendMessage(messageData);
+            const messageData = `Username: ${username}\nViews: ${views}\nStatus: ${plainStatus}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gen}`;
+            await sendMessage(messageData);
         } else {
             await sendMessage('User not found');
         }
@@ -434,6 +425,13 @@ if (gender === '1'){
         console.error('Error in handleprofother:', error);
     }
 }
+
+function htmlToPlainText(html) {
+    var temporalDivElement = document.createElement("div");
+    temporalDivElement.innerHTML = html;
+    return temporalDivElement.textContent || temporalDivElement.innerText || "";
+}
+
 
 
 
