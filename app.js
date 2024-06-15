@@ -9,6 +9,7 @@
     let reconnectTimeout;
 //==================
 let captchaUrls = "";
+     let gen = ""; 
 //   let captchaImg;
 //   let captchaTextbox;
  //  let sendCaptchaButton;
@@ -399,13 +400,19 @@ async function handleprofother(messageObj) {
         const creation = messageObj.reg_date;
         const friends = messageObj.roster_count;
         const gender = messageObj.gender;
-
+if (gender === '1'){
+ gen = 'Male';
+} else if(gender ='2'){
+  gen = 'Female'; 
+}else{
+  gen = 'Unknown'; 
+}
         if (profurl) {
             await sendimage(profurl);
         }
 
         if (username) {
-            const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gender}`;
+            const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gend}`;
             await sendMessage(messageData);
         } else {
             await sendMessage('User not found');
