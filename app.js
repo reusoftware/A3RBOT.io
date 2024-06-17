@@ -305,6 +305,16 @@ async function sendCaptcha(captcha, captchaUrl) {
         console.log('Not connected to server');  // Debug statement
     }
 }
+
+activateQuizCheckbox.addEventListener("change", function() {
+        if (activateQuizCheckbox.checked) {
+            socket.emit("activateQuiz");
+        } else {
+            socket.emit("deactivateQuiz");
+        }
+    });
+
+      
 async function chat(to, body) {
     const packetID = generatePacketID();  // Assuming generatePacketID() generates a unique packet ID
     const message = {
@@ -970,12 +980,6 @@ function handleRoomInfoResponse(response) {
 
 
 
-// Function to activate the quiz
-document.getElementById('activateQuizCheckbox').addEventListener('change', function() {
-    if (this.checked) {
-        activateQuiz();
-    }
-});
 
 document.getElementById('deactivateQuizCheckbox').addEventListener('change', function() {
     if (this.checked) {
