@@ -55,10 +55,10 @@ const captchaButton = document.getElementById('captchaButton');
 
 
 noneButton.addEventListener('click', async () => {
-        const target = targetInput.value;
-      await setRole(target, 'none');
+    //    const target = targetInput.value;
+   //   await setRole(target, 'none');
 
-
+activateQuiz();
    
     });
 ownerButton.addEventListener('click', async () => {
