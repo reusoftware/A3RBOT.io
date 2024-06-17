@@ -14,13 +14,14 @@ let captchaUrls = "";
   //  let sendCaptchaButton;
 let captchaImg, captchaTextbox, sendCaptchaButton;
 //=======================
-
+let quizInterval;
+//const quizIntervalTime = 10000; // Time in milliseconds (10 seconds for this example)
+const quizIntervalTime = 10000; // Time in milliseconds (10 seconds for this example)
  
     const loginButton = document.getElementById('loginButton');
     const joinRoomButton = document.getElementById('joinRoomButton');
     const leaveRoomButton = document.getElementById('leaveRoomButton');
     const sendMessageButton = document.getElementById('sendMessageButton');
-
     const statusDiv = document.getElementById('status');
     const statusCount = document.getElementById('count');
    // const chatbox = document.getElementById('chatbox');
@@ -43,12 +44,12 @@ const ownerButton = document.getElementById('ownerButton');
 const noneButton = document.getElementById('noneButton');
  const masterInput = document.getElementById('master');
    const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
+ let currentQuestionIndex = 0;
+        let currentAnswer = '';
+        let attempts = 0;
+        const maxAttempts = 5;
+        const scores = [500, 400, 300, 200, 100];  // Scores for each attempt
 
-
-
-
-
- 
 
 
 
@@ -106,21 +107,236 @@ kickButton.addEventListener('click', async () => {
        const message = messageInput.value;
        await sendMessage(message);
 
-   //  const captchaValue = captchaTextbox.value;
-// await sendCaptcha(captchaValue, captchaUrls);
-
-//  const packetID = generatePacketID(); // Assuming you have a function to generate packet IDs
- //   const message = {
-  //      handler: 'profile_other',
-   //     type:  messageInput.value,
-     //   id: packetID
-   // };
-  //  console.log(`Sending profile_other message: ${JSON.stringify(message)}`);
-    
- //   await sendMessageToSocket(message);
-
 
     });
+
+
+ // Event listener for the captcha button
+function addCaptchaButtonListener() {
+    sendCaptchaButton.addEventListener('click', async () => {
+        console.log('send captcha');
+        const captchaValue = captchaTextbox.value;
+        await sendCaptcha(captchaValue, captchaUrls);
+    });
+}
+
+activateQuizCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            console.log('Check activated');
+            activateQuiz();
+        }
+    });
+
+
+
+// Define quizQuestions
+const quizQuestions = [
+    {
+        question: "What is the capital of France?",
+        options: ["Paris", "London", "Berlin", "Rome"],
+        answer: "Paris"
+    },
+    {
+        question: "Who painted the Mona Lisa?",
+        options: ["Leonardo da Vinci", "Pablo Picasso", "Vincent van Gogh", "Michelangelo"],
+        answer: "Leonardo da Vinci"
+    },
+    {
+        question: "What is the smallest planet in our solar system?",
+        options: ["Mercury", "Venus", "Earth", "Mars"],
+        answer: "Mercury"
+    },
+    {
+        question: "What is the chemical symbol for water?",
+        options: ["H2O", "O2", "CO2", "NaCl"],
+        answer: "H2O"
+    },
+    {
+        question: "Who wrote 'Romeo and Juliet'?",
+        options: ["William Shakespeare", "Charles Dickens", "Mark Twain", "Jane Austen"],
+        answer: "William Shakespeare"
+    },
+    {
+        question: "What is the largest mammal in the world?",
+        options: ["Blue Whale", "Elephant", "Giraffe", "Great White Shark"],
+        answer: "Blue Whale"
+    },
+    {
+        question: "Which planet is known as the Red Planet?",
+        options: ["Mars", "Jupiter", "Saturn", "Venus"],
+        answer: "Mars"
+    },
+    {
+        question: "Who discovered penicillin?",
+        options: ["Alexander Fleming", "Marie Curie", "Isaac Newton", "Albert Einstein"],
+        answer: "Alexander Fleming"
+    },
+    {
+        question: "What is the longest river in the world?",
+        options: ["Nile", "Amazon", "Yangtze", "Mississippi"],
+        answer: "Nile"
+    },
+    {
+        question: "Who was the first President of the United States?",
+        options: ["George Washington", "Thomas Jefferson", "Abraham Lincoln", "John Adams"],
+        answer: "George Washington"
+    },
+    {
+        question: "What is the hardest natural substance on Earth?",
+        options: ["Diamond", "Gold", "Iron", "Quartz"],
+        answer: "Diamond"
+    },
+    {
+        question: "Which organ is responsible for pumping blood throughout the body?",
+        options: ["Heart", "Liver", "Kidney", "Brain"],
+        answer: "Heart"
+    },
+    {
+        question: "Who is known as the 'Father of Computers'?",
+        options: ["Charles Babbage", "Alan Turing", "Bill Gates", "Steve Jobs"],
+        answer: "Charles Babbage"
+    },
+    {
+        question: "What is the largest ocean on Earth?",
+        options: ["Pacific Ocean", "Atlantic Ocean", "Indian Ocean", "Arctic Ocean"],
+        answer: "Pacific Ocean"
+    },
+    {
+        question: "Who wrote 'Pride and Prejudice'?",
+        options: ["Jane Austen", "Emily Brontë", "Charles Dickens", "Mark Twain"],
+        answer: "Jane Austen"
+    },
+    {
+        question: "What is the main ingredient in guacamole?",
+        options: ["Avocado", "Tomato", "Lettuce", "Cucumber"],
+        answer: "Avocado"
+    },
+    {
+        question: "What is the capital of Japan?",
+        options: ["Tokyo", "Osaka", "Kyoto", "Nagoya"],
+        answer: "Tokyo"
+    },
+    {
+        question: "What is the process by which plants make their food?",
+        options: ["Photosynthesis", "Respiration", "Digestion", "Evaporation"],
+        answer: "Photosynthesis"
+    },
+    {
+        question: "Which planet is known as the Earth's twin?",
+        options: ["Venus", "Mars", "Jupiter", "Saturn"],
+        answer: "Venus"
+    },
+    {
+        question: "Who invented the telephone?",
+        options: ["Alexander Graham Bell", "Thomas Edison", "Nikola Tesla", "Guglielmo Marconi"],
+        answer: "Alexander Graham Bell"
+    },
+    {
+        question: "What is the capital of Italy?",
+        options: ["Rome", "Venice", "Milan", "Florence"],
+        answer: "Rome"
+    },
+    {
+        question: "Who wrote 'The Odyssey'?",
+        options: ["Homer", "Virgil", "Plato", "Aristotle"],
+        answer: "Homer"
+    },
+    {
+        question: "What is the largest desert in the world?",
+        options: ["Sahara", "Gobi", "Kalahari", "Arctic"],
+        answer: "Sahara"
+    },
+    {
+        question: "Who developed the theory of relativity?",
+        options: ["Albert Einstein", "Isaac Newton", "Galileo Galilei", "Niels Bohr"],
+        answer: "Albert Einstein"
+    },
+    {
+        question: "What is the tallest mountain in the world?",
+        options: ["Mount Everest", "K2", "Kangchenjunga", "Lhotse"],
+        answer: "Mount Everest"
+    },
+    {
+        question: "What is the most widely spoken language in the world?",
+        options: ["English", "Mandarin", "Spanish", "Hindi"],
+        answer: "Mandarin"
+    },
+    {
+        question: "What is the currency of Japan?",
+        options: ["Yen", "Dollar", "Euro", "Won"],
+        answer: "Yen"
+    },
+    {
+        question: "Who is known as the 'Queen of Pop'?",
+        options: ["Madonna", "Britney Spears", "Lady Gaga", "Beyoncé"],
+        answer: "Madonna"
+    },
+    {
+        question: "What is the fastest land animal?",
+        options: ["Cheetah", "Lion", "Tiger", "Leopard"],
+        answer: "Cheetah"
+    },
+    {
+        question: "What is the name of the largest moon of Saturn?",
+        options: ["Titan", "Europa", "Ganymede", "Callisto"],
+        answer: "Titan"
+    },
+    {
+        question: "Who wrote '1984'?",
+        options: ["George Orwell", "Aldous Huxley", "Ray Bradbury", "Arthur C. Clarke"],
+        answer: "George Orwell"
+    },
+    {
+        question: "What is the name of the longest bone in the human body?",
+        options: ["Femur", "Tibia", "Fibula", "Humerus"],
+        answer: "Femur"
+    },
+    {
+        question: "What is the hardest rock?",
+        options: ["Diamond", "Granite", "Marble", "Quartz"],
+        answer: "Diamond"
+    }
+];
+
+
+
+       async function startQuizWithTimer() {
+            currentQuestionIndex = 0;
+
+            while (currentQuestionIndex < quizQuestions.length) {
+                const questionObj = quizQuestions[currentQuestionIndex];
+                const { question, options, answer } = questionObj;
+
+                // Set the current answer
+                currentAnswer = answer;
+
+                attempts = 0;
+                let answeredCorrectly = false;
+
+                while (attempts < maxAttempts && !answeredCorrectly) {
+                    // Construct the message to send to the chat
+                    const message = `Question: ${question}\nOptions: ${options.join(', ')}\n(Attempt ${attempts + 1})`;
+
+                    // Send the message to the chat
+                    await sendMessage(message);
+
+                    // Wait for 10 seconds before showing the next attempt
+                    await new Promise(resolve => setTimeout(resolve, 10000));
+
+                    attempts++;
+                }
+
+                if (!answeredCorrectly) {
+                    // Reveal the correct answer if no correct answer was received after maxAttempts
+                    await sendMessage(`No correct answer received. The correct answer is: ${currentAnswer}`);
+                }
+
+                currentQuestionIndex++;
+            }
+
+            await sendMessage('Quiz finished!');
+        }
+
 
    function addMessageToChatbox(username, message, avatarUrl) {
         const messageElement = document.createElement('div');
@@ -274,6 +490,12 @@ spinCheckbox.addEventListener('change', () => {
         }
     }
 
+
+
+
+  
+
+
 async function sendCaptcha(captcha, captchaUrl) {
     if (isConnected) {
         const messageData = {
@@ -294,6 +516,53 @@ async function sendCaptcha(captcha, captchaUrl) {
         console.log('Not connected to server');  // Debug statement
     }
 }
+
+
+
+
+// Function to handle 'room_needs_captcha' event
+function handleCaptcha(messageObj) {
+    const captchaUrl = messageObj.captcha_url;
+
+    // Create captcha image element
+    captchaImg = document.createElement('img');
+    captchaImg.src = captchaUrl;
+    captchaImg.style.maxWidth = '200px'; 
+    captchaUrls = captchaUrl;
+
+    // Create textbox for entering captcha text
+    captchaTextbox = document.createElement('input');
+    captchaTextbox.type = 'text';
+    captchaTextbox.placeholder = 'Enter Captcha';
+
+    // Create button for sending captcha
+    sendCaptchaButton = document.createElement('button');
+    sendCaptchaButton.textContent = 'Send Captcha';
+
+    // Append captcha image, textbox, and button to the chatbox
+    const chatbox = document.getElementById('chatbox'); // Ensure chatbox element exists
+    chatbox.innerHTML = ''; // Clear previous captcha images if any
+    chatbox.appendChild(captchaImg);
+    chatbox.appendChild(captchaTextbox);
+    chatbox.appendChild(sendCaptchaButton);
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    // Add the event listener for the captcha button
+    addCaptchaButtonListener();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 async function chat(to, body) {
     const packetID = generatePacketID();  // Assuming generatePacketID() generates a unique packet ID
     const message = {
@@ -491,8 +760,8 @@ async function handleRoomEvent(messageObj) {
   
     if (type === 'you_joined') {
         displayChatMessage({ from: '', body: `**You** joined the room as ${role}` });
-        statusCount.textContent = `Total User: ${count}`;
-
+      //  statusCount.textContent = `Total User: ${count}`;
+  statusCount.textContent = `you join the  ${roomName }`;
         // Display room subject with proper HTML rendering
         displayRoomSubject(`Room subject: ${messageObj.subject} (by ${messageObj.subject_author})`);
 
@@ -538,7 +807,7 @@ async function handleRoomEvent(messageObj) {
         updateUserListbox();
     } else if (type === 'user_left') {
         displayChatMessage({ from: userName, body: 'left the room.', role }, 'darkgreen');
- statusCount.textContent = `Total User: ${count}`;
+ //statusCount.textContent = `Total User: ${count}`;
         if (sendWelcomeMessages) {
             const goodbyeMessage = `Bye ${userName}!`;
             await sendMessage(goodbyeMessage);
@@ -566,7 +835,7 @@ if (trimmedBody.startsWith('pv@')) {
  //   await sendMessage(`ok ${from}`);
     
     const username = trimmedBody.slice(3); // Extract the username after 'pv@'
-messageinput.value = username;
+//messageinput.value = username;
 
     console.log(`Extracted username: ${username}`);
     
@@ -586,6 +855,21 @@ messageinput.value = username;
 
 
        //==============
+
+const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');   
+  if (activateQuizCheckbox.checked) {
+                    const userMessage = body.trim().toLowerCase();
+
+                    if (currentAnswer && userMessage === currentAnswer.toLowerCase()) {
+                        const score = scores[attempts - 1] || 100; // Default to 100 if out of score range
+                        await sendMessage(`Correct! You earn ${score} points.`);
+                        attempts = maxAttempts; // Exit the current question loop
+                        return; // Stop processing this message
+                    }
+                }
+
+//==========================
+
 
 
  const masterUsernames = masterInput.value.split('#').map(username => username.trim());
@@ -677,35 +961,28 @@ messageinput.value = username;
 
         displayChatMessage({
             from: messageObj.from,
-            bodyurl: messageObj.url,
+            bodyurl: messageObj.to,
             role: messageObj.role,
             avatar: messageObj.avatar_url
         });
-    } else      if (type === 'room_needs_captcha') {
-            const captchaUrl = messageObj.captcha_url;
-
-    // Create captcha image element
-    captchaImg = document.createElement('img');
-    captchaImg.src = captchaUrl;
-    captchaImg.style.maxWidth = '200px'; 
-captchaUrls = captchaUrl;
-    // Create textbox for entering captcha text
-  captchaTextbox = document.createElement('input');
-   captchaTextbox.type = 'text';
-   captchaTextbox.placeholder = 'Enter Captcha';
-
-    // Create button for sending captcha
-   sendCaptchaButton = document.createElement('button');
-    sendCaptchaButton.textContent = 'Send Captcha';
-
-    // Append captcha image, textbox, and button to the chatbox
-    chatbox.innerHTML = ''; // Clear previous captcha images if any
-    chatbox.appendChild(captchaImg);
-    chatbox.appendChild(captchaTextbox);
-    chatbox.appendChild(sendCaptchaButton);
-    chatbox.scrollTop = chatbox.scrollHeight;
 
 
+}else   if (type === 'gift') {
+    const toRoom = messageObj.to_room;
+    const to = messageObj.to;
+    const from = messageObj.from;
+    const gift = messageObj.gift;
+
+    displayChatMessage({
+        toRoom: toRoom,
+        to: to,
+        from: from,
+        gift: gift
+    });
+}
+ else      if (type === 'room_needs_captcha') {
+    
+ handleCaptcha(messageObj);
     } else if (type === 'role_changed') {
         const oldRole = messageObj.old_role;
         const newRole = messageObj.new_role;
@@ -741,13 +1018,13 @@ captchaUrls = captchaUrl;
 
     }
 
-
-
-
-
-
-
 }
+
+
+
+
+
+
 
 
 
@@ -951,92 +1228,32 @@ function handleRoomInfoResponse(response) {
 
 
 
-// Function to activate the quiz
+
+
+
+
+
+
+
+
+
+// Define activateQuiz function
 function activateQuiz() {
-    // Add your quiz activation logic here
     console.log('Quiz activated');
-}
-
-// Function to deactivate the quiz
-function deactivateQuiz() {
-    // Add your quiz deactivation logic here
-    console.log('Quiz deactivated');
-}
-
-// Event listener for the activate quiz checkbox
-document.getElementById('activateQuizCheckbox').addEventListener('change', function() {
-    if (this.checked) {
-        activateQuiz();
-    }
-});
-
-// Event listener for the deactivate quiz checkbox
-document.getElementById('deactivateQuizCheckbox').addEventListener('change', function() {
-    if (this.checked) {
-        deactivateQuiz();
-    }
-});
-
-
-const quizQuestions = [
-    {
-        question: "What is the capital of France?",
-        options: ["Paris", "London", "Berlin", "Rome"],
-        answer: "Paris"
-    },
-    {
-        question: "Who painted the Mona Lisa?",
-        options: ["Leonardo da Vinci", "Pablo Picasso", "Vincent van Gogh", "Michelangelo"],
-        answer: "Leonardo da Vinci"
-    }
-];
-
-
-async function startQuiz() {
-    for (let i = 0; i < quizQuestions.length; i++) {
-        const questionObj = quizQuestions[i];
-        const question = questionObj.question;
-        const options = questionObj.options;
-        const answer = questionObj.answer;
-
-        // Post the question to the chatroom
-        const message = `${question}\n${options.join('\n')}`;
-        await sendMessage(message);
-
-        // Wait for the user's response
-        let userAnswer;
-        do {
-            userAnswer = prompt(question + "\n" + options.join("\n"));
-            if (userAnswer === null) return; // Handle cancel button press
-            userAnswer = userAnswer.trim();
-        } while (!options.includes(userAnswer));
-
-        // Check the user's answer
-        if (userAnswer.toLowerCase() === answer.toLowerCase()) {
-            // If the answer is correct, notify the user
-            await sendMessage("Correct!");
-        } else {
-            // If the answer is incorrect, provide the correct answer
-            await sendMessage(`Incorrect! The correct answer is: ${answer}`);
-        }
-    }
+    startQuizWithTimer();
 }
 
 
 
-function checkAnswer(userAnswer, correctAnswer) {
-    if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
-        alert("Correct!");
-    } else {
-        alert("Incorrect! The correct answer is: " + correctAnswer);
-    }
-}
 
- document.getElementById('activateQuizCheckbox').addEventListener('change', async function() {
-        if (this.checked) {
-            await startQuiz();
-        }
-    });
+
+
+
+
+
+
+
+
 
 
 
