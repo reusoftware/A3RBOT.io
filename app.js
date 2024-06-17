@@ -169,49 +169,60 @@ spinCheckbox.addEventListener('change', () => {
 
 
 
-   async function connectWebSocket(username, password) {
-        statusDiv.textContent = 'Connecting to server...';
-        socket = new WebSocket('wss://chatp.net:5333/server');
+   
 
-        socket.onopen = async () => {
-            isConnected = true;
-            statusDiv.textContent = 'Connected to server';
-            clearTimeout(reconnectTimeout);
+    async function connectWebSocket(username, password) {
+    statusDiv.textContent = 'Connecting to server...';
+    socket = new WebSocket('wss://chatp.net:5333/server');
 
-            const loginMessage = {
-                username: username,
-                password: password,
-                handler: 'login',
-                id: generatePacketID()
-            };
-            console.log('Sending login message:', loginMessage);
-            await sendMessageToSocket(loginMessage);
+    socket.onopen = async () => {
+        isConnected = true;
+        statusDiv.textContent = 'Connected to server';
+        clearTimeout(reconnectTimeout);
+
+        const loginMessage = {
+            username: username,
+            password: password,
+            handler: 'login',
+            id: generatePacketID()
         };
+        console.log('Sending login message:', loginMessage);
+        await sendMessageToSocket(loginMessage);
+    };
 
-        socket.onmessage = (event) => {
-            console.log('Received message:', event.data);
-            processReceivedMessage(event.data);
-        };
+    socket.onmessage = (event) => {
+        console.log('Received message:', event.data);
+        processReceivedMessage(event.data);
+    };
 
-        socket.onclose = () => {
-            isConnected = false;
-            statusDiv.textContent = 'Disconnected from server';
-            attemptReconnect(username, password);
-        };
+    socket.onclose = () => {
+        isConnected = false;
+        statusDiv.textContent = 'Disconnected from server';
+        attemptReconnect(username, password);
+    };
 
-        socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            statusDiv.textContent = 'WebSocket error. Check console for details.';
-            attemptReconnect(username, password);
-        };
+    socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        statusDiv.textContent = 'WebSocket error. Check console for details.';
+        attemptReconnect(username, password);
+    };
+}
+
+async function attemptReconnect(username, password) {
+    if (!isConnected) {
+        statusDiv.textContent = 'Attempting to reconnect...';
+        reconnectTimeout = setTimeout(() => {
+            if (navigator.onLine) {
+                connectWebSocket(username, password);
+            } else {
+                statusDiv.textContent = 'No internet connection. Waiting to reconnect...';
+                // Retry checking internet connection after a delay
+                setTimeout(() => attemptReconnect(username, password), reconnectInterval);
+            }
+        }, reconnectInterval);
     }
+}
 
-    async function attemptReconnect(username, password) {
-        if (!isConnected) {
-            statusDiv.textContent = 'Attempting to reconnect...';
-            reconnectTimeout = setTimeout(() => connectWebSocket(username, password), reconnectInterval);
-        }
-    }
 
      async function joinRoom(roomName) {
         if (isConnected) {
