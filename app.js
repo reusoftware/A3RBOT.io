@@ -981,11 +981,21 @@ function handleRoomInfoResponse(response) {
 
 
 
-document.getElementById('deactivateQuizCheckbox').addEventListener('change', function() {
+// Get the checkbox element
+const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
+
+// Add event listener to the checkbox
+activateQuizCheckbox.addEventListener('change', function() {
+    // Check if the checkbox is checked
     if (this.checked) {
+        // Call the activateQuiz function when the checkbox is checked
+        activateQuiz();
+    } else {
+        // Optionally, you can add a deactivateQuiz function if needed
         deactivateQuiz();
     }
 });
+
 
 const quizQuestions = [
     {
