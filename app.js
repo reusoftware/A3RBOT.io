@@ -1,4 +1,4 @@
- document.addEventListener("DOMContentLoaded",() { 
+   document.addEventListener('DOMContentLoaded', () => {
  let socket;
     let isConnected = false;
     let packetIdNum = 0;
@@ -9,11 +9,10 @@
     let reconnectTimeout;
 //==================
 let captchaUrls = "";
-     let gen = ""; 
-//   let captchaImg;
-//   let captchaTextbox;
- //  let sendCaptchaButton;
-let captchaImg, captchaTextbox;
+   // let captchaImg;
+   // let captchaTextbox;
+  //  let sendCaptchaButton;
+let captchaImg, captchaTextbox, sendCaptchaButton;
 //=======================
 
  
@@ -21,11 +20,11 @@ let captchaImg, captchaTextbox;
     const joinRoomButton = document.getElementById('joinRoomButton');
     const leaveRoomButton = document.getElementById('leaveRoomButton');
     const sendMessageButton = document.getElementById('sendMessageButton');
-  const statusroom = document.getElementById('statusroom');
+
     const statusDiv = document.getElementById('status');
     const statusCount = document.getElementById('count');
-    const chatbox = document.getElementById('chatbox');
-//let chatbox = document.getElementById('chatbox');
+   // const chatbox = document.getElementById('chatbox');
+let chatbox = document.getElementById('chatbox');
     const welcomeCheckbox = document.getElementById('welcomeCheckbox');
    const spinCheckbox = document.getElementById('spinCheckbox');
     const roomListbox = document.getElementById('roomListbox');
@@ -44,7 +43,7 @@ const ownerButton = document.getElementById('ownerButton');
 const noneButton = document.getElementById('noneButton');
  const masterInput = document.getElementById('master');
    const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
-const captchaButton = document.getElementById('captchaButton');
+
 
 
 
@@ -55,11 +54,8 @@ const captchaButton = document.getElementById('captchaButton');
 
 
 noneButton.addEventListener('click', async () => {
-    //    const target = targetInput.value;
-   //   await setRole(target, 'none');
-
-activateQuiz();
-   
+        const target = targetInput.value;
+        await setRole(target, 'none');
     });
 ownerButton.addEventListener('click', async () => {
         const target = targetInput.value;
@@ -87,7 +83,6 @@ kickButton.addEventListener('click', async () => {
     banButton.addEventListener('click', async () => {
         const target = targetInput.value;
         await setRole(target, 'outcast');
-   
     });
 
     loginButton.addEventListener('click', async () => {
@@ -108,17 +103,25 @@ kickButton.addEventListener('click', async () => {
     });
 
      sendMessageButton.addEventListener('click', async () => {
-     const message = messageInput.value;
- await sendMessage(message);
+      //  const message = messageInput.value;
+       // await sendMessage(message);
 
-messageInput.value ='';
+   //  const captchaValue = captchaTextbox.value;
+// await sendCaptcha(captchaValue, captchaUrls);
+
+  const packetID = generatePacketID(); // Assuming you have a function to generate packet IDs
+    const message = {
+        handler: 'profile_other',
+        type:  messageInput.value,
+        id: packetID
+    };
+    console.log(`Sending profile_other message: ${JSON.stringify(message)}`);
+    
+    await sendMessageToSocket(message);
+
 
     });
-captchaButton.addEventListener('click', async () => {
-      const captchaValue = captchaTextbox.value;
- await sendCaptcha(captchaValue, captchaUrls);
-   
-    });
+
    function addMessageToChatbox(username, message, avatarUrl) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
@@ -169,60 +172,49 @@ spinCheckbox.addEventListener('change', () => {
 
 
 
-   
+   async function connectWebSocket(username, password) {
+        statusDiv.textContent = 'Connecting to server...';
+        socket = new WebSocket('wss://chatp.net:5333/server');
 
-    async function connectWebSocket(username, password) {
-    statusDiv.textContent = 'Connecting to server...';
-    socket = new WebSocket('wss://chatp.net:5333/server');
+        socket.onopen = async () => {
+            isConnected = true;
+            statusDiv.textContent = 'Connected to server';
+            clearTimeout(reconnectTimeout);
 
-    socket.onopen = async () => {
-        isConnected = true;
-        statusDiv.textContent = 'Connected to server';
-        clearTimeout(reconnectTimeout);
-
-        const loginMessage = {
-            username: username,
-            password: password,
-            handler: 'login',
-            id: generatePacketID()
+            const loginMessage = {
+                username: username,
+                password: password,
+                handler: 'login',
+                id: generatePacketID()
+            };
+            console.log('Sending login message:', loginMessage);
+            await sendMessageToSocket(loginMessage);
         };
-        console.log('Sending login message:', loginMessage);
-        await sendMessageToSocket(loginMessage);
-    };
 
-    socket.onmessage = (event) => {
-        console.log('Received message:', event.data);
-        processReceivedMessage(event.data);
-    };
+        socket.onmessage = (event) => {
+            console.log('Received message:', event.data);
+            processReceivedMessage(event.data);
+        };
 
-    socket.onclose = () => {
-        isConnected = false;
-        statusDiv.textContent = 'Disconnected from server';
-        attemptReconnect(username, password);
-    };
+        socket.onclose = () => {
+            isConnected = false;
+            statusDiv.textContent = 'Disconnected from server';
+            attemptReconnect(username, password);
+        };
 
-    socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        statusDiv.textContent = 'WebSocket error. Check console for details.';
-        attemptReconnect(username, password);
-    };
-}
-
-async function attemptReconnect(username, password) {
-    if (!isConnected) {
-        statusDiv.textContent = 'Attempting to reconnect...';
-        reconnectTimeout = setTimeout(() => {
-            if (navigator.onLine) {
-                connectWebSocket(username, password);
-            } else {
-                statusDiv.textContent = 'No internet connection. Waiting to reconnect...';
-                // Retry checking internet connection after a delay
-                setTimeout(() => attemptReconnect(username, password), reconnectInterval);
-            }
-        }, reconnectInterval);
+        socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            statusDiv.textContent = 'WebSocket error. Check console for details.';
+            attemptReconnect(username, password);
+        };
     }
-}
 
+    async function attemptReconnect(username, password) {
+        if (!isConnected) {
+            statusDiv.textContent = 'Attempting to reconnect...';
+            reconnectTimeout = setTimeout(() => connectWebSocket(username, password), reconnectInterval);
+        }
+    }
 
      async function joinRoom(roomName) {
         if (isConnected) {
@@ -231,7 +223,6 @@ async function attemptReconnect(username, password) {
                 id: generatePacketID(),
                 name: roomName
             };
-             
             await sendMessageToSocket(joinMessage);
             await fetchUserList(roomName);
             await chat('syntax-error', 'your message here');
@@ -247,9 +238,7 @@ async function attemptReconnect(username, password) {
     function rejoinRoomIfNecessary() {
         const room = document.getElementById('room').value;
         if (room) {
-           
             joinRoom(room);
-                 statusroom.textContent = `You Re-join the room: ${roomName}`;
         }
     }
 
@@ -262,7 +251,7 @@ async function attemptReconnect(username, password) {
                 name: roomName
             };
             await sendMessageToSocket(leaveMessage);
-            statusroom.textContent = `You left the room: ${roomName}`;
+            statusDiv.textContent = `You left the room: ${roomName}`;
         } else {
             statusDiv.textContent = 'Not connected to server';
         }
@@ -305,16 +294,6 @@ async function sendCaptcha(captcha, captchaUrl) {
         console.log('Not connected to server');  // Debug statement
     }
 }
-
-activateQuizCheckbox.addEventListener("change", function() {
-        if (activateQuizCheckbox.checked) {
-            socket.emit("activateQuiz");
-        } else {
-            socket.emit("deactivateQuiz");
-        }
-    });
-
-      
 async function chat(to, body) {
     const packetID = generatePacketID();  // Assuming generatePacketID() generates a unique packet ID
     const message = {
@@ -349,59 +328,50 @@ function generatePacketID() {
 
 
 
-function processReceivedMessage(message) {
+
+
+  function processReceivedMessage(message) {
     console.log('Received message:', message);
     debugBox.value += `${message}\n`;
+
 
     try {
         const jsonDict = JSON.parse(message);
 
         if (jsonDict) {
             const handler = jsonDict.handler;
-            console.log('Handler:', handler);
 
             if (handler === 'login_event') {
-                console.log('Handling login_event');
                 handleLoginEvent(jsonDict);
             } else if (handler === 'room_event') {
-                console.log('Handling room_event');
                 handleRoomEvent(jsonDict);
+
             } else if (handler === 'chat_message') {
-                console.log('Handling chat_message');
                 //   displayChatMessage(jsonDict);
             } else if (handler === 'presence') {
-                console.log('Handling presence');
                 onUserProfileUpdates(jsonDict);
             } else if (handler === 'group_invite') {
-                console.log('Handling group_invite');
                 onMucInvitation(jsonDict.inviter, jsonDict.name, 'private');
             } else if (handler === 'user_online' || handler === 'user_offline') {
-                console.log('Handling user_online or user_offline');
                 onUserPresence(jsonDict);
             } else if (handler === 'muc_event') {
-                console.log('Handling muc_event');
                 handleMucEvent(jsonDict);
             } else if (handler === 'last_activity') {
-                console.log('Handling last_activity');
                 onUserActivityResult(jsonDict);
             } else if (handler === 'roster') {
-                console.log('Handling roster');
                 onRoster(jsonDict);
             } else if (handler === 'friend_requests') {
-                console.log('Handling friend_requests');
                 onFriendRequest(jsonDict);
             } else if (handler === 'register_event') {
-                console.log('Handling register_event');
                 handleRegisterEvent(jsonDict);
             } else if (handler === 'profile_other') {
-                console.log('Handling profile_other');
-                handleprofother(jsonDict);
+                onGetUserProfile(jsonDict);
             } else if (handler === 'followers_event') {
-                console.log('Handling followers_event');
                 onFollowersList(jsonDict);
             } else if (handler === 'room_info') {
-                console.log('Handling room_info');
-                handleMucList(jsonDict);
+              handleMucList(jsonDict);
+ } else if (handler === 'profile_other') {
+              handleprofother(jsonDict);
             } else {
                 console.log('Unknown handler:', handler);
             }
@@ -412,75 +382,53 @@ function processReceivedMessage(message) {
 }
 
 
+
+//  obj2 = New With {Key .handler = "room_message", Key .type = "image", Key .id = packetID, Key .url = imageUrl, Key .room = [to], Key .body = "", Key .length = "0"}
+           
+
+
+
+
+   async function sendimage(url) {
+        if (isConnected) {
+            const messageData = {
+                handler: 'room_message',
+                type: 'image',
+                id: generatePacketID(),
+                body: '',
+                room: document.getElementById('room').value,
+                url: url,
+                length: '0'
+            };
+            await sendMessageToSocket(messageData);
+        } else {
+            statusDiv.textContent = 'Not connected to server';
+        }
+    }
+
+
 async function handleprofother(messageObj) {
-    try {
-        console.log('Inside handleprofother');
+    const username = messageObj.type;
+    const profurl = messageObj.photo_url;
+    const views = messageObj.views;
+    const status = messageObj.status;
+    const country = messageObj.country;
+    const creation = messageObj.reg_date;
+    const friends = messageObj.roster_count;
 
-        const username = messageObj.type;
-        const profurl = messageObj.photo_url;
-        const views = messageObj.views;
-        const status = messageObj.status;
-        const country = messageObj.country;
-        const creation = messageObj.reg_date;
-        const friends = messageObj.roster_count;
-        const gender = messageObj.gender;
-        const plainStatus = htmlToPlainText(status);
-
-        let gen;
-        if (gender === '1') {
-            gen = 'Male';
-        } else if (gender === '2') {
-            gen = 'Female';
-        } else {
-            gen = 'Unknown';
-        }
-
-        if (profurl) {
-            await sendimage(profurl);
-        }
-
-        if (username) {
-            const messageData = `Username: ${username}\nViews: ${views}\nStatus: ${plainStatus}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gen}`;
-            await sendMessage(messageData);
-        } else {
-            await sendMessage('User not found');
-        }
-    } catch (error) {
-        console.error('Error in handleprofother:', error);
+    const messageData = `
+        Username: ${username}\n
+        Views: ${views}\n
+        Status: ${status}\n
+        Country: ${country}\n
+        Registration Date: ${creation}\n
+        Friends: ${friends}
+    `
+    await sendMessage(messageData);
+   if (profurl) {
+      await sendMessage(profurl); 
     }
 }
-
-
-
-function htmlToPlainText(html) {
-    const tempElement = document.createElement('div');
-    tempElement.innerHTML = html;
-    return tempElement.textContent || tempElement.innerText || '';
-}
-
-
-
-
-      
-
-
-async function sendimage(url) {
-    if (isConnected) {
-        const messageData = {
-            handler: 'room_message',
-            type: 'image',
-            id: generatePacketID(),
-            body: '',
-            room: document.getElementById('room').value,
-            url: url,
-            length: '0'
-        };
-        await sendMessageToSocket(messageData);
-    } else {
-        statusDiv.textContent = 'Not connected to server';
-    }
-}
-
 
 
      function handleMucList(messageObj) {
@@ -527,7 +475,8 @@ async function handleRoomEvent(messageObj) {
     if (type === 'you_joined') {
         displayChatMessage({ from: '', body: `**You** joined the room as ${role}` });
         statusCount.textContent = `Total User: ${count}`;
-      statusroom.textContent = `You Join the room: ${roomName}`;
+
+        // Display room subject with proper HTML rendering
         displayRoomSubject(`Room subject: ${messageObj.subject} (by ${messageObj.subject_author})`);
 
         // Display list of users with roles
@@ -597,9 +546,11 @@ async function handleRoomEvent(messageObj) {
 const trimmedBody = body.trim();
 if (trimmedBody.startsWith('pv@')) {
     console.log(`Detected 'pv@' prefix in message: ${trimmedBody}`);
-   // await sendMessage(`ok ${from}`);
+    await sendMessage(`ok ${from}`);
     
     const username = trimmedBody.slice(3); // Extract the username after 'pv@'
+messageinput.value = username;
+
     console.log(`Extracted username: ${username}`);
     
     const packetID = generatePacketID(); // Assuming you have a function to generate packet IDs
@@ -726,7 +677,10 @@ captchaUrls = captchaUrl;
    captchaTextbox.type = 'text';
    captchaTextbox.placeholder = 'Enter Captcha';
 
-    
+    // Create button for sending captcha
+   sendCaptchaButton = document.createElement('button');
+    sendCaptchaButton.textContent = 'Send Captcha';
+
     // Append captcha image, textbox, and button to the chatbox
     chatbox.innerHTML = ''; // Clear previous captcha images if any
     chatbox.appendChild(captchaImg);
@@ -980,18 +934,28 @@ function handleRoomInfoResponse(response) {
 
 
 
+// Function to activate the quiz
+function activateQuiz() {
+    // Add your quiz activation logic here
+    console.log('Quiz activated');
+}
 
-// Get the checkbox element
-const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
+// Function to deactivate the quiz
+function deactivateQuiz() {
+    // Add your quiz deactivation logic here
+    console.log('Quiz deactivated');
+}
 
-// Add event listener to the checkbox
-activateQuizCheckbox.addEventListener('change', function() {
-    // Check if the checkbox is checked
+// Event listener for the activate quiz checkbox
+document.getElementById('activateQuizCheckbox').addEventListener('change', function() {
     if (this.checked) {
-        // Call the activateQuiz function when the checkbox is checked
         activateQuiz();
-    } else {
-        // Optionally, you can add a deactivateQuiz function if needed
+    }
+});
+
+// Event listener for the deactivate quiz checkbox
+document.getElementById('deactivateQuizCheckbox').addEventListener('change', function() {
+    if (this.checked) {
         deactivateQuiz();
     }
 });
@@ -1010,15 +974,6 @@ const quizQuestions = [
     }
 ];
 
-async function activateQuiz() {
-    console.log('Quiz activated');
-    await startQuiz();
-}
-
-function deactivateQuiz() {
-    console.log('Quiz deactivated');
-    // Add your quiz deactivation logic here
-}
 
 async function startQuiz() {
     for (let i = 0; i < quizQuestions.length; i++) {
@@ -1034,7 +989,7 @@ async function startQuiz() {
         // Wait for the user's response
         let userAnswer;
         do {
-            userAnswer = await getUserAnswer(question, options);
+            userAnswer = prompt(question + "\n" + options.join("\n"));
             if (userAnswer === null) return; // Handle cancel button press
             userAnswer = userAnswer.trim();
         } while (!options.includes(userAnswer));
@@ -1050,43 +1005,26 @@ async function startQuiz() {
     }
 }
 
-function getUserAnswer(question, options) {
-    return new Promise((resolve) => {
-        const promptMessage = `${question}\n${options.join('\n')}`;
-        const userAnswer = prompt(promptMessage);
-        resolve(userAnswer);
-    });
-}
 
-// Example implementation of sendMessage function
-async function sendMessage(message) {
-    if (isConnected) {
-        const messageData = {
-            handler: 'room_message',
-            type: 'text',
-            id: generatePacketID(),
-            body: message,
-            room: document.getElementById('room').value,
-            url: '',
-            length: '0'
-        };
-        await sendMessageToSocket(messageData);
+
+function checkAnswer(userAnswer, correctAnswer) {
+    if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+        alert("Correct!");
     } else {
-        statusDiv.textContent = 'Not connected to server';
+        alert("Incorrect! The correct answer is: " + correctAnswer);
     }
 }
 
-// Example implementation of sendMessageToSocket function
-async function sendMessageToSocket(message) {
-    return new Promise((resolve, reject) => {
-        if (isConnected && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify(message));
-            resolve();
-        } else {
-            reject(new Error('WebSocket is not connected or not open'));
+ document.getElementById('activateQuizCheckbox').addEventListener('change', async function() {
+        if (this.checked) {
+            await startQuiz();
         }
     });
-}
+
+
+
+
+
 
 
 
