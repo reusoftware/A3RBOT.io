@@ -103,21 +103,21 @@ kickButton.addEventListener('click', async () => {
     });
 
      sendMessageButton.addEventListener('click', async () => {
-      //  const message = messageInput.value;
-       // await sendMessage(message);
+       const message = messageInput.value;
+       await sendMessage(message);
 
    //  const captchaValue = captchaTextbox.value;
 // await sendCaptcha(captchaValue, captchaUrls);
 
-  const packetID = generatePacketID(); // Assuming you have a function to generate packet IDs
-    const message = {
-        handler: 'profile_other',
-        type:  messageInput.value,
-        id: packetID
-    };
-    console.log(`Sending profile_other message: ${JSON.stringify(message)}`);
+//  const packetID = generatePacketID(); // Assuming you have a function to generate packet IDs
+ //   const message = {
+  //      handler: 'profile_other',
+   //     type:  messageInput.value,
+     //   id: packetID
+   // };
+  //  console.log(`Sending profile_other message: ${JSON.stringify(message)}`);
     
-    await sendMessageToSocket(message);
+ //   await sendMessageToSocket(message);
 
 
     });
@@ -408,27 +408,44 @@ function generatePacketID() {
 
 
 async function handleprofother(messageObj) {
-    const username = messageObj.type;
-    const profurl = messageObj.photo_url;
-    const views = messageObj.views;
-    const status = messageObj.status;
-    const country = messageObj.country;
-    const creation = messageObj.reg_date;
-    const friends = messageObj.roster_count;
+    try {
+        console.log('Inside handleprofother');
 
-    const messageData = `
-        Username: ${username}\n
-        Views: ${views}\n
-        Status: ${status}\n
-        Country: ${country}\n
-        Registration Date: ${creation}\n
-        Friends: ${friends}
-    `
-    await sendMessage(messageData);
-   if (profurl) {
-      await sendMessage(profurl); 
+        const username = messageObj.type;
+        const profurl = messageObj.photo_url;
+        const views = messageObj.views;
+        const status = messageObj.status;
+        const country = messageObj.country;
+        const creation = messageObj.reg_date;
+        const friends = messageObj.roster_count;
+        const gender = messageObj.gender;
+const gend ='';
+if(gender = '0' ){
+gend ='Unknown'
+}else if (gender = '1'){
+gend ='Male';
+ }else if (gender = '2'){
+gend ='Female';  
+}
+
+
+
+       
+        if (profurl) {
+            await sendimage(profurl);
+        }
+
+        if (username) {
+            const messageData = `Username: ${username}\nStatus: ${status}\nViews: ${views}\nCountry: ${country}\nRegistration Date: ${creation}\nFriends: ${friends}\nGender: ${gend}`;
+            await sendMessage(messageData);
+        } else {
+            await sendMessage('User not found');
+        }
+    } catch (error) {
+        console.error('Error in handleprofother:', error);
     }
 }
+
 
 
      function handleMucList(messageObj) {
@@ -546,7 +563,7 @@ async function handleRoomEvent(messageObj) {
 const trimmedBody = body.trim();
 if (trimmedBody.startsWith('pv@')) {
     console.log(`Detected 'pv@' prefix in message: ${trimmedBody}`);
-    await sendMessage(`ok ${from}`);
+ //   await sendMessage(`ok ${from}`);
     
     const username = trimmedBody.slice(3); // Extract the username after 'pv@'
 messageinput.value = username;
