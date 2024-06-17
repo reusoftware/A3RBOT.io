@@ -971,25 +971,12 @@ function handleRoomInfoResponse(response) {
 
 
 // Function to activate the quiz
-async function activateQuiz() {
-    console.log('Quiz activated');
-    await startQuiz();
-}
-
-// Function to deactivate the quiz
-function deactivateQuiz() {
-    // Add your quiz deactivation logic here
-    console.log('Quiz deactivated');
-}
-
-// Event listener for the activate quiz checkbox
 document.getElementById('activateQuizCheckbox').addEventListener('change', function() {
     if (this.checked) {
         activateQuiz();
     }
 });
 
-// Event listener for the deactivate quiz checkbox
 document.getElementById('deactivateQuizCheckbox').addEventListener('change', function() {
     if (this.checked) {
         deactivateQuiz();
@@ -1009,6 +996,16 @@ const quizQuestions = [
     }
 ];
 
+async function activateQuiz() {
+    console.log('Quiz activated');
+    await startQuiz();
+}
+
+function deactivateQuiz() {
+    console.log('Quiz deactivated');
+    // Add your quiz deactivation logic here
+}
+
 async function startQuiz() {
     for (let i = 0; i < quizQuestions.length; i++) {
         const questionObj = quizQuestions[i];
@@ -1023,7 +1020,7 @@ async function startQuiz() {
         // Wait for the user's response
         let userAnswer;
         do {
-            userAnswer = prompt(question + "\n" + options.join("\n"));
+            userAnswer = await getUserAnswer(question, options);
             if (userAnswer === null) return; // Handle cancel button press
             userAnswer = userAnswer.trim();
         } while (!options.includes(userAnswer));
@@ -1037,6 +1034,14 @@ async function startQuiz() {
             await sendMessage(`Incorrect! The correct answer is: ${answer}`);
         }
     }
+}
+
+function getUserAnswer(question, options) {
+    return new Promise((resolve) => {
+        const promptMessage = `${question}\n${options.join('\n')}`;
+        const userAnswer = prompt(promptMessage);
+        resolve(userAnswer);
+    });
 }
 
 // Example implementation of sendMessage function
@@ -1068,7 +1073,6 @@ async function sendMessageToSocket(message) {
         }
     });
 }
-
 
 
 
