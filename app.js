@@ -52,10 +52,10 @@ const noneButton = document.getElementById('noneButton');
 let userScores = {}; // To keep track of user scores
 let currentAnswer = null; // Current correct answer
 
+//==============
 
-
-
-
+//Start With 'p'~paper#Start With 'p'~power# start with 'o'~our# start with 'u'~usual# start 
+//===================
 
 noneButton.addEventListener('click', async () => {
         const target = targetInput.value;
