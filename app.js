@@ -783,8 +783,8 @@ async function handleRoomEvent(messageObj) {
 
     } else if (type === 'user_joined') {
         displayChatMessage({ from: userName, body: `joined the room as ${role}`, role }, 'green');
-
- statusCount.textContent = `Total User: ${count}`;
+userListbox.textContent = `Current User: ${count}`;
+ //statusCount.textContent = `Total User: ${count}`;
         if (userName === 'prateek') {
             await setRole(userName, 'outcast');
         }
@@ -801,14 +801,16 @@ async function handleRoomEvent(messageObj) {
             const randomWelcomeMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
             await sendMessage(randomWelcomeMessage);
         }
-
+userListbox.textContent = `Current User: ${count}`;
         // Add the new user to the user list
         userList.push({ username: userName, role });
         updateUserListbox();
     } else if (type === 'user_left') {
         displayChatMessage({ from: userName, body: 'left the room.', role }, 'darkgreen');
  //statusCount.textContent = `Total User: ${count}`;
-        if (sendWelcomeMessages) {
+      userListbox.textContent = `Current User: ${count}`;
+       
+       if (sendWelcomeMessages) {
             const goodbyeMessage = `Bye ${userName}!`;
             await sendMessage(goodbyeMessage);
         }
