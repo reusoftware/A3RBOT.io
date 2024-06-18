@@ -763,8 +763,8 @@ async function handleRoomEvent(messageObj) {
   
     if (type === 'you_joined') {
         displayChatMessage({ from: '', body: `**You** joined the room as ${role}` });
-      statusCount.textContent = `Total User: ${count}`;
-  joinlog.textContent = `you join the  ${roomName }`;
+      
+  joinlog.textContent = `You Join the  ${roomName }`;
         // Display room subject with proper HTML rendering
         displayRoomSubject(`Room subject: ${messageObj.subject} (by ${messageObj.subject_author})`);
 
@@ -776,7 +776,7 @@ async function handleRoomEvent(messageObj) {
         // Update the user list
         userList = messageObj.users;
         updateUserListbox();
-
+statusCount.textContent = `Total User: ${count}`;
 
  chatbox.removeChild(captchaImg);
       chatbox.removeChild(captchaTextbox);
@@ -786,9 +786,7 @@ async function handleRoomEvent(messageObj) {
 
     } else if (type === 'user_joined') {
         displayChatMessage({ from: userName, body: `joined the room as ${role}`, role }, 'green');
-//userListbox.textContent = `Current User: ${count}`;
- //statusCount.textContent = `Total User: ${count}`;
-            statusCount.textContent = `Total User: ${count}`;
+            
   
        if (userName === 'prateek') {
             await setRole(userName, 'outcast');
@@ -806,10 +804,11 @@ async function handleRoomEvent(messageObj) {
             const randomWelcomeMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
             await sendMessage(randomWelcomeMessage);
         }
-userListbox.textContent = `Current User: ${count}`;
+
         // Add the new user to the user list
         userList.push({ username: userName, role });
         updateUserListbox();
+       statusCount.textContent = `Total User: ${count}`;
     } else if (type === 'user_left') {
         displayChatMessage({ from: userName, body: 'left the room.', role }, 'darkgreen');
  //statusCount.textContent = `Total User: ${count}`;
