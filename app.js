@@ -24,7 +24,8 @@ const quizIntervalTime = 10000; // Time in milliseconds (10 seconds for this exa
     const sendMessageButton = document.getElementById('sendMessageButton');
     const statusDiv = document.getElementById('status');
     const statusCount = document.getElementById('count');
-   // const chatbox = document.getElementById('chatbox');
+  const joinlog = document.getElementById('joinlog');
+      // const chatbox = document.getElementById('chatbox');
 let chatbox = document.getElementById('chatbox');
     const welcomeCheckbox = document.getElementById('welcomeCheckbox');
    const spinCheckbox = document.getElementById('spinCheckbox');
@@ -442,7 +443,9 @@ spinCheckbox.addEventListener('change', () => {
             await sendMessageToSocket(joinMessage);
             await fetchUserList(roomName);
             await chat('syntax-error', 'your message here');
-            if (sendWelcomeMessages) {
+          const room = document.getElementById('room').value;
+         
+           if (sendWelcomeMessages) {
                 const welcomeMessage = `Hello world, I'm a web bot! Welcome, ${currentUsername}!`;
                 await sendMessage(welcomeMessage);
             }
@@ -467,7 +470,7 @@ spinCheckbox.addEventListener('change', () => {
                 name: roomName
             };
             await sendMessageToSocket(leaveMessage);
-            statusDiv.textContent = `You left the room: ${roomName}`;
+            joinlog.textContent = `You left the room: ${roomName}`;
         } else {
             statusDiv.textContent = 'Not connected to server';
         }
@@ -760,8 +763,8 @@ async function handleRoomEvent(messageObj) {
   
     if (type === 'you_joined') {
         displayChatMessage({ from: '', body: `**You** joined the room as ${role}` });
-      //  statusCount.textContent = `Total User: ${count}`;
-  statusCount.textContent = `you join the  ${roomName }`;
+      statusCount.textContent = `Total User: ${count}`;
+  joinlog.textContent = `you join the  ${roomName }`;
         // Display room subject with proper HTML rendering
         displayRoomSubject(`Room subject: ${messageObj.subject} (by ${messageObj.subject_author})`);
 
@@ -783,9 +786,11 @@ async function handleRoomEvent(messageObj) {
 
     } else if (type === 'user_joined') {
         displayChatMessage({ from: userName, body: `joined the room as ${role}`, role }, 'green');
-userListbox.textContent = `Current User: ${count}`;
+//userListbox.textContent = `Current User: ${count}`;
  //statusCount.textContent = `Total User: ${count}`;
-        if (userName === 'prateek') {
+            statusCount.textContent = `Total User: ${count}`;
+  
+       if (userName === 'prateek') {
             await setRole(userName, 'outcast');
         }
 
@@ -808,8 +813,9 @@ userListbox.textContent = `Current User: ${count}`;
     } else if (type === 'user_left') {
         displayChatMessage({ from: userName, body: 'left the room.', role }, 'darkgreen');
  //statusCount.textContent = `Total User: ${count}`;
-      userListbox.textContent = `Current User: ${count}`;
-       
+   //   userListbox.textContent = `Current User: ${count}`;
+             statusCount.textContent = `Total User: ${count}`;
+//  joinlog.textContent = `you join the  ${roomName }`;
        if (sendWelcomeMessages) {
             const goodbyeMessage = `Bye ${userName}!`;
             await sendMessage(goodbyeMessage);
