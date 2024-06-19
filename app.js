@@ -14,10 +14,7 @@ let captchaUrls = "";
   //  let sendCaptchaButton;
 let captchaImg, captchaTextbox, sendCaptchaButton;
 //=======================
-let quizInterval;
-//const quizIntervalTime = 10000; // Time in milliseconds (10 seconds for this example)
-const quizIntervalTime = 20000; // Time in milliseconds (10 seconds for this example)
- 
+
     const loginButton = document.getElementById('loginButton');
     const joinRoomButton = document.getElementById('joinRoomButton');
     const leaveRoomButton = document.getElementById('leaveRoomButton');
@@ -44,18 +41,10 @@ const adminButton = document.getElementById('adminButton');
 const ownerButton = document.getElementById('ownerButton');
 const noneButton = document.getElementById('noneButton');
  const masterInput = document.getElementById('master');
-   const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
- let currentQuestionIndex = 0;
-        let attempts = 0;
-        const maxAttempts = 5;
-        const scores = [100, 200, 300, 400, 500];  // Scores for each attempt
-let userScores = {}; // To keep track of user scores
-let currentAnswer = null; // Current correct answer
 
-//==============
 
-//Start With 'p'~paper#Start With 'p'~power# start with 'o'~our# start with 'u'~usual# start 
-//===================
+
+
 
 noneButton.addEventListener('click', async () => {
         const target = targetInput.value;
@@ -109,7 +98,7 @@ kickButton.addEventListener('click', async () => {
      sendMessageButton.addEventListener('click', async () => {
        const message = messageInput.value;
        await sendMessage(message);
-
+messageInput.value=('');
 
     });
 
@@ -122,178 +111,271 @@ function addCaptchaButtonListener() {
         await sendCaptcha(captchaValue, captchaUrls);
     });
 }
-  const questionAnswerInput = document.getElementById('questionAnswerInput').value.trim();
-
-activateQuizCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            console.log('Check activated');
-            activateQuiz();
-}else{
-deactivateQuiz();
-        }
+ 
 
 
+//========================================
+let userData = {}; // To store user scores and response times
+let quizInterval;
+let attemptCounter = 0; // To track the number of attempts for the current question
 
+const questionAnswerInput = document.getElementById('questionAnswerInput');
+const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
 
-    });
+let txtquiz = ''; // Initialize txtquiz as an empty string
 
+// Set up event listener to update txtquiz when the input value changes
+questionAnswerInput.addEventListener('input', function() {
+    txtquiz = questionAnswerInput.value;
+    localStorage.setItem('userQuestions', txtquiz);
+});
 
-
-
-
-// Function to parse the question list and generate quiz questions array
-function parseQuestionList(questionList) {
-    // Split the question list by '#' character to get individual lines
-    const lines =questionList.split('#');
-    const quizQuestions = [];
-
-    // Loop through each line in the question list
-    for (const line of lines) {
-        // Split the line by '~' to separate question and answer
-        const [prompt, answer] = line.split('~');
-
-        // Extract the prompt by removing the "Start With" part and trimming any leading/trailing spaces
-        const extractedPrompt = prompt.replace("Start With ", "").trim();
-
-        // Construct the question object and add it to the quizQuestions array
-        const questionObj = {
-            question: `${extractedPrompt}(${scrambleSentence(answer)})`, // Generate scrambled question
-            answer: answer.trim() // Trim any leading/trailing spaces from the answer
-        };
-        quizQuestions.push(questionObj);
-    }
-
-    return quizQuestions;
-}
-
-// Example question list
-const questionList =questionAnswerInput.value ;
-
-// Generate quiz questions array from the question list
-const quizQuestions = parseQuestionList(questionList);
-console.log(quizQuestions);
-
-function scrambleSentence(sentence) {
-    const words = sentence.split(' ');
-    const scrambledWords = words.map(word => {
-        const characters = word.split('');
-        const shuffledCharacters = shuffleArray(characters);
-        return shuffledCharacters.join('');
-    });
-    return scrambledWords.join(' ');
-}
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-function scrambleWord(word) {
-    const characters = word.split('');
-    const shuffledCharacters = shuffleArray(characters);
-    return shuffledCharacters.join('');
-}
-
-// Function to generate scrambled questions and answers
-function generateScrambledQuestionsAndAnswers(quizQuestions) {
-    const scrambledQuestions = [];
-    for (const questionObj of quizQuestions) {
-        const { question, answer } = questionObj;
-        const scrambledAnswer = scrambleWord(answer);
-        scrambledQuestions.push({ question, scrambledAnswer });
-    }
-    return scrambledQuestions;
-}
-
-async function startQuizWithTimer() {
-    currentQuestionIndex = 0;
-
-    // Generate scrambled questions and answers
-    const scrambledQuestions = generateScrambledQuestionsAndAnswers(quizQuestions);
-
-    while (currentQuestionIndex < scrambledQuestions.length) {
-        const { question, scrambledAnswer } = scrambledQuestions[currentQuestionIndex];
-
-        // Construct the message to send to the chat
-        const message = `Question: ${question} (Answer: ${scrambledAnswer})`;
-
-        // Send the message to the chat
-        await sendMessage(message);
-
-        attempts = 0;
-        let answeredCorrectly = false;
-
-        while (attempts < maxAttempts && !answeredCorrectly) {
-            // Wait for 20 seconds for user to answer
-            await new Promise(resolve => setTimeout(resolve, 20000));
-
-            // Check if the question was answered correctly
-            if (answeredCorrectly) {
-                break;
-            }
-
-            attempts++;
-        }
-
-        // If no correct answer was received after maxAttempts, reveal the correct answer
-        if (!answeredCorrectly) {
-            await sendMessage(`No correct answer received. The correct answer is: ${scrambledAnswer}`);
-        }
-
-        currentQuestionIndex++;
-    }
-
-    await sendMessage('Quiz finished!');
-}
-
-// Function to calculate score based on attempts
-function getScore(attempts) {
-    switch (attempts) {
-        case 0: return 500;
-        case 1: return 200;
-        case 2: return 100;
-        case 3: return 50;
-        case 4: return 10;
-        default: return 0;
-    }
-}
-
-
-//======================================
-
-
-
-// Function to handle form submission
-//document.getElementById('quizForm').addEventListener('submit', async function(event) {
-  //  event.preventDefault(); // Prevent the default form submission
-
-    const questionAnswerInput = document.getElementById('questionAnswerInput').value.trim();
-    if (questionAnswerInput) {
-        // Split the input into questions and answers
-        const lines = questionAnswerInput.split('\n');
-        const scrambledLines = lines.map(line => {
-            const [question, answer] = line.split('~').map(item => item.trim());
-            const scrambledQuestion = scrambleSentence(question);
-            const scrambledAnswer = scrambleSentence(answer);
-            return `Question: ${scrambledQuestion}\nAnswer: ${scrambledAnswer}`;
-        });
-
-        // Post the scrambled questions and answers to the chatroom
-        for (const line of scrambledLines) {
-            await sendMessage(line);
-        }
-    } else {
-        // Inform the user if the input is empty
-        alert('Please enter your questions and answers.');
+// On page load or reload, get saved user questions from local storage
+window.addEventListener('load', function() {
+    const savedUserQuestions = localStorage.getItem('userQuestions');
+    if (savedUserQuestions) {
+        questionAnswerInput.value = savedUserQuestions;
+        txtquiz = savedUserQuestions;
     }
 });
 
+// Event listener for the checkbox to start/stop the quiz
+activateQuizCheckbox.addEventListener('change', () => {
+    if (activateQuizCheckbox.checked) {
+        startQuiz();
+    } else {
+        clearInterval(quizInterval);
+        sendMessageToChat('Quiz stopped!');
+    }
+});
 
-//====================================
+const attemptMessages = [
+    "Please Answer this😅! ",
+    "NoBody Know?😅!",
+    "Are you confuse 🤪 ",
+    "already given up yet 🥲😋"
+];
 
+async function acakScramble(kataawal, chrsplit) {
+    const separator = chrsplit;
+    const words = kataawal.split(separator);
+    return await scrambleWordArray(words);
+}
+
+async function scrambleWordArray(words) {
+    let num;
+    let strArray2;
+    let num4;
+    let num5;
+    const random = Math.random;
+    const length = words.length;
+    let strArray = new Array(length).fill(null);
+    let flag = false;
+    let index = 0;
+    let pause = false;
+    let stop = false;
+
+    while (true) {
+        if ((index >= length) || stop || pause) {
+            strArray2 = new Array(length).fill(null);
+            num4 = 0;
+            num5 = length - 1;
+            break;
+        }
+
+        let flag2 = false;
+
+        while (!flag2) {
+            if (stop || pause) {
+                flag2 = true;
+            } else {
+                await new Promise(resolve => setTimeout(resolve, 17)); // Simulate Thread.Sleep(&H11)
+                num = Math.floor(random() * length);
+
+                if ((num >= length) || (strArray[num] !== null && strArray[num] !== "") || flag2) {
+                    if (!stop && !pause) {
+                        continue;
+                    }
+                } else {
+                    if (index === Math.floor(length / 2) && !flag) {
+                        if (stop || pause) {
+                            flag2 = true;
+                            break;
+                        }
+                        await sendMessageToChat("Loading scramble quiz database 25% please wait .....................");
+                        flag = true;
+                    }
+
+                    if (index === length - 1) {
+                        if (stop || pause) {
+                            flag2 = true;
+                            break;
+                        }
+                        await sendMessageToChat("Loading scramble quiz database 50% please wait .....................");
+                    }
+
+                    strArray[num] = words[index];
+                    flag2 = true;
+                }
+            }
+        }
+
+        index += 1;
+    }
+
+    while (true) {
+        if ((num5 <= -1) || stop || pause) {
+            return strArray2;
+        } else {
+            let flag3 = false;
+
+            while (!flag3) {
+                if (stop || pause) {
+                    flag3 = true;
+                } else {
+                    await new Promise(resolve => setTimeout(resolve, 17)); // Simulate Thread.Sleep(&H11)
+                    num = Math.floor(random() * length);
+
+                    if ((num >= length) || (strArray2[num] !== null && strArray2[num] !== "") || flag3) {
+                        continue;
+                    }
+
+                    if (num4 === Math.floor(length / 2) && !flag) {
+                        if (stop || pause) {
+                            flag3 = true;
+                            break;
+                        }
+                        await sendMessageToChat("Loading scramble quiz database 75% please wait .....................");
+                        flag = true;
+                    }
+
+                    if (num4 === length - 1) {
+                        if (stop || pause) {
+                            flag3 = true;
+                            break;
+                        }
+                        await sendMessageToChat("Loading scramble quiz database 100% done!!");
+                    }
+
+                    strArray2[num] = strArray[num5];
+                    flag3 = true;
+                }
+            }
+
+            num4 += 1;
+            num5 -= 1;
+        }
+    }
+}
+
+async function startQuiz() {
+    attemptCounter = 0;
+    nomorquiz = 0;
+    qs = await acakScramble(txtquiz, '#');
+    await postQuestion();
+    quizInterval = setInterval(nextAttempt, 20000); // Set interval to 10 seconds for each attempt
+}
+
+async function postQuestion() {
+    if (nomorquiz >= qs.length) {
+        clearInterval(quizInterval);
+        await sendMessageToChat('Quiz finished!');
+        return;
+    }
+
+    const strArray = qs[nomorquiz].split('~');
+    jawabanquiz = strArray[1];
+    soalquiznya = await scrambleWord(jawabanquiz);
+    kategori = strArray[0].replace('Start With ', '');
+    cq1 = nomorquiz + 1; // Increment question number
+
+    const questionMessage = `Question #${cq1} [${kategori}] = ${soalquiznya}`;
+    await sendMessageToChat(questionMessage);
+    questionStartTime = Date.now(); // Start the timer for this question
+}
+
+async function nextAttempt() {
+    attemptCounter++;
+
+    if (attemptCounter <= 4) {
+        const attemptMessage = `${attemptMessages[attemptCounter - 1]} Question #${cq1} [${kategori}] = ${soalquiznya}`;
+        await sendMessageToChat(attemptMessage);
+    } else {
+        const revealMessage = `The correct answer is ${jawabanquiz}`;
+        await sendMessageToChat(revealMessage);
+        attemptCounter = 0; // Reset the attempt counter
+        nomorquiz += 1;
+
+        if (nomorquiz < qs.length) {
+            await postQuestion();
+        } else {
+            clearInterval(quizInterval);
+            await sendMessageToChat('Quiz finished!');
+        }
+    }
+}
+
+async function sendMessageToChat(message) {
+    console.log(message); // Replace with actual send message logic
+  await sendMessage(message);
+}
+
+async function scrambleWord(word) {
+    const characters = word.split('');
+    let scrambledWord = '';
+    const usedPositions = new Array(characters.length).fill(false);
+
+    while (scrambledWord.length < characters.length) {
+        const rndPosition = Math.floor(Math.random() * characters.length);
+        if (!usedPositions[rndPosition]) {
+            scrambledWord += characters[rndPosition];
+            usedPositions[rndPosition] = true;
+        }
+    }
+
+    return scrambledWord;
+}
+
+async function handleUserAnswer(user, answer) {
+    const currentTime = Date.now();
+    const responseTime = currentTime - questionStartTime;
+
+    let points = 0;
+    if (answer.toLowerCase() === jawabanquiz.toLowerCase()) {
+        if (attemptCounter === 1) {
+            points = 500;
+        } else if (attemptCounter === 2) {
+            points = 300;
+        } else if (attemptCounter === 3) {
+            points = 200;
+        } else {
+            points = 100;
+        }
+
+        if (!userData[user]) {
+            userData[user] = { score: 0, times: [] };
+        }
+
+        userData[user].score += points;
+        userData[user].times.push(responseTime);
+
+        await sendMessageToChat(`${user} answered correctly and earned ${points} points! Total score: ${userData[user].score}`);
+        attemptCounter = 0; // Reset the attempt counter
+        nomorquiz += 1;
+
+        if (nomorquiz < qs.length) {
+            await postQuestion();
+        } else {
+            clearInterval(quizInterval);
+            await sendMessageToChat('Quiz finished!');
+        }
+    }
+}
+
+
+
+
+//=============================================
 
    function addMessageToChatbox(username, message, avatarUrl) {
         const messageElement = document.createElement('div');
@@ -450,11 +532,6 @@ spinCheckbox.addEventListener('change', () => {
     }
 
 
-
-
-  
-
-
 async function sendCaptcha(captcha, captchaUrl) {
     if (isConnected) {
         const messageData = {
@@ -475,8 +552,6 @@ async function sendCaptcha(captcha, captchaUrl) {
         console.log('Not connected to server');  // Debug statement
     }
 }
-
-
 
 
 // Function to handle 'room_needs_captcha' event
@@ -510,18 +585,6 @@ function handleCaptcha(messageObj) {
     addCaptchaButtonListener();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 async function chat(to, body) {
     const packetID = generatePacketID();  // Assuming generatePacketID() generates a unique packet ID
     const message = {
@@ -554,14 +617,9 @@ function generatePacketID() {
 }
  
 
-
-
-
-
   function processReceivedMessage(message) {
     console.log('Received message:', message);
     debugBox.value += `${message}\n`;
-
 
     try {
         const jsonDict = JSON.parse(message);
@@ -606,15 +664,7 @@ function generatePacketID() {
         console.error('Error processing received message:', ex);
     }
 }
-
-
-
-//  obj2 = New With {Key .handler = "room_message", Key .type = "image", Key .id = packetID, Key .url = imageUrl, Key .room = [to], Key .body = "", Key .length = "0"}
-           
-
-
-
-
+         
    async function sendimage(url) {
         if (isConnected) {
             const messageData = {
@@ -631,7 +681,6 @@ function generatePacketID() {
             statusDiv.textContent = 'Not connected to server';
         }
     }
-
 
 async function handleprofother(messageObj) {
     try {
@@ -681,8 +730,6 @@ async function handleprofother(messageObj) {
     }
 }
 
-
-
      function handleMucList(messageObj) {
         const roomList = messageObj.rooms;
         roomListbox.innerHTML = ''; // Clear the current list
@@ -694,8 +741,6 @@ async function handleprofother(messageObj) {
             roomListbox.appendChild(option);
         });
     }
-
-
 
     async function handleLoginEvent(messageObj) {
         const type = messageObj.type;
@@ -713,9 +758,6 @@ async function handleprofother(messageObj) {
             rejoinRoomIfNecessary(); 
         }
     }
-
-
-
 
 async function handleRoomEvent(messageObj) {
     const type = messageObj.type;
@@ -744,8 +786,6 @@ statusCount.textContent = `Total User: ${count}`;
  chatbox.removeChild(captchaImg);
       chatbox.removeChild(captchaTextbox);
       chatbox.removeChild(sendCaptchaButton);
-
-
 
     } else if (type === 'user_joined') {
         displayChatMessage({ from: userName, body: `joined the room as ${role}`, role }, 'green');
@@ -821,36 +861,15 @@ if (trimmedBody.startsWith('pv@')) {
     console.log(`Message does not start with 'pv@': ${trimmedBody}`);
 }
 
-
-
        //==============
-const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');   
-if (activateQuizCheckbox.checked) {
-    const userMessage = body.trim().toLowerCase();
-
-    // Check if the user message matches the current answer
-    if (currentAnswer && userMessage === currentAnswer.toLowerCase()) {
-        const score = getScore(attempts); // Calculate score based on attempts
-      //  await sendMessage(`Correct! You earn ${score} points.`);
-
-        // Update user score
-        if (!userScores[from]) {
-            userScores[from] = 0;
-        }
-        userScores[from] += score;
-
-        await sendMessage(`Correct! You earn ${score} points. ${from}, your current score is: ${userScores[from]}`);
-
-        // Set the flag to indicate the question was answered correctly
-        answeredCorrectly = true;
-        attempts = maxAttempts; // Exit the current question loop
-        return; // Stop processing this message
-    }
+ const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
+        if (activateQuizCheckbox && activateQuizCheckbox.checked) {
+if (from === usernameInput.value){
+}else{
+            const userMessage = body.trim().toLowerCase();
+            await handleUserAnswer(from, userMessage);
 }
-
-//==========================
-
-
+        }
 
  const masterUsernames = masterInput.value.split('#').map(username => username.trim());
 
@@ -913,11 +932,6 @@ if (activateQuizCheckbox.checked) {
 
       }      } else {
   console.log('Command from unauthorized user:', from);
-
-
-
-
-
 
 
 }
@@ -1018,14 +1032,6 @@ if (activateQuizCheckbox.checked) {
 }
 
 
-
-
-
-
-
-
-
-
 function displayChatMessage(messageObj, color = 'black') {
     const { from, body, bodyurl, role, avatar, type } = messageObj;
     const newMessage = document.createElement('div');
@@ -1109,17 +1115,6 @@ function displayRoomSubject(subject) {
     chatbox.scrollTop = chatbox.scrollHeight;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 function getRoleColor(role) {
     switch (role) {
         case 'creator':
@@ -1202,8 +1197,6 @@ async function setRole(username, role) {
     });
 }
 
-
-
      async function getChatroomList(mucType, packetID, mucPageNum) {
         const listRequest = {
             handler: 'muc_list',
@@ -1213,7 +1206,6 @@ async function setRole(username, role) {
         };
         await sendMessageToSocket(listRequest);
     }
-
 
 socket.on('message', (messageObj) => {
     const type = messageObj.type;
@@ -1231,67 +1223,12 @@ socket.on('message', (messageObj) => {
 function handleRoomInfoResponse(response) {
     const roomListBox = document.getElementById('roomlistbox');
     roomListBox.innerHTML = ''; // Clear previous list
-
     response.rooms.forEach(room => {
         const roomItem = document.createElement('li');
         roomItem.textContent = room.name; // Assuming room object has a name property
         roomListBox.appendChild(roomItem);
     });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-let quizActive = false;
-
-async function deactivateQuiz() {
-    quizActive = false;
-    currentQuestionIndex = 0;
-    currentAnswer = '';
-    attempts = 0;
-    for (const user in userScores) {
-        userScores[user] = 0;
-    }
-    await sendMessage('The quiz has been deactivated.');
-}
-
-
-// Define activateQuiz function
-function activateQuiz() {
-    console.log('Quiz activated');
-    startQuizWithTimer();
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
