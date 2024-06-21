@@ -810,7 +810,7 @@ statusCount.textContent = `Total User: ${count}`;
     const body = messageObj.body;
     const from = messageObj.from;
     const avatar = messageObj.avatar_url;
-
+const roomName = messageObj.room
     displayChatMessage({
         from: messageObj.from,
         body: messageObj.body,
