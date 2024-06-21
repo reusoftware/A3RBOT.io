@@ -820,8 +820,9 @@ statusCount.textContent = `Total User: ${count}`;
 
 
 const trimmedBody = body.trim();
+//if (masterInput.value === from || isInMasterList(currentRoomName, from)) {
 
-   if (masterInput.value === from || isInMasterList(from)) {
+if (masterInput.value === from || isInMasterList(roomName, from)) {
     if (body.startsWith('+qs')) {
         await activateQuiz();
     } else if (body.startsWith('-qs')) {
@@ -851,10 +852,10 @@ const trimmedBody = body.trim();
         const masuser = trimmedBody.slice(4).trim(); // Extract the username after 'mas+'
         console.log(`Extracted username: ${masuser}`);
         if (masuser) {
-            if (addToMasterList(masuser)) {
-                await sendMessage(`${masuser} added to the master list.`);
+            if (addToMasterList(roomName, masuser)) {
+                await sendMessage(`${masuser} added to the master list for ${roomName}.`);
             } else {
-                await sendMessage(`${masuser} is already in the master list.`);
+                await sendMessage(`${masuser} is already in the master list for ${roomName}.`);
             }
         } else {
             await sendMessage('Please provide a valid username.');
@@ -863,21 +864,20 @@ const trimmedBody = body.trim();
         const masuser = trimmedBody.slice(4).trim(); // Extract the username after 'mas-'
         console.log(`Extracted username: ${masuser}`);
         if (masuser) {
-            if (removeFromMasterList(masuser)) {
-                await sendMessage(`${masuser} removed from the master list.`);
+            if (removeFromMasterList(roomName, masuser)) {
+                await sendMessage(`${masuser} removed from the master list for ${roomName}.`);
             } else {
-                await sendMessage(`${masuser} is not in the master list.`);
+                await sendMessage(`${masuser} is not in the master list for ${roomName}.`);
             }
         } else {
             await sendMessage('Please provide a valid username.');
         }
     } else if (body === 'maslist') {
-        if (masterList.length > 0) {
-            await sendMessage(`Master List: ${masterList.join(', ')}`);
+        if (roomMasterLists[roomName] && roomMasterLists[roomName].length > 0) {
+            await sendMessage(`Master List for ${roomName}: ${roomMasterLists[roomName].join(', ')}`);
         } else {
-            await sendMessage('Master List is empty.');
+            await sendMessage(`Master List for ${roomName} is empty.`);
         }
-  
     }
 }// else {
    
@@ -1042,35 +1042,45 @@ const trimmedBody = body.trim();
 
 //masterlist================
 // Initialize masterList from localStorage
-let masterList = JSON.parse(localStorage.getItem('masterList')) || [];
+let roomMasterLists = JSON.parse(localStorage.getItem('roomMasterLists')) || {};
 
-// Function to add a user to the master list
-function addToMasterList(username) {
-    if (!masterList.includes(username)) {
-        masterList.push(username);
-        localStorage.setItem('masterList', JSON.stringify(masterList)); // Save to localStorage
+// Function to add a user to the master list of a specific room
+function addToMasterList(roomName, username) {
+    if (!roomMasterLists[roomName]) {
+        roomMasterLists[roomName] = [];
+    }
+    if (!roomMasterLists[roomName].includes(username)) {
+        roomMasterLists[roomName].push(username);
+        localStorage.setItem('roomMasterLists', JSON.stringify(roomMasterLists)); // Save to localStorage
         return true; // Indicates successful addition
     }
     return false; // Indicates user already in the list
 }
 
-// Function to remove a user from the master list
-function removeFromMasterList(username) {
-    const index = masterList.indexOf(username);
-    if (index !== -1) {
-        masterList.splice(index, 1);
-        localStorage.setItem('masterList', JSON.stringify(masterList)); // Save to localStorage
-        return true; // Indicates successful removal
+// Function to remove a user from the master list of a specific room
+function removeFromMasterList(roomName, username) {
+    if (roomMasterLists[roomName]) {
+        const index = roomMasterLists[roomName].indexOf(username);
+        if (index !== -1) {
+            roomMasterLists[roomName].splice(index, 1);
+            localStorage.setItem('roomMasterLists', JSON.stringify(roomMasterLists)); // Save to localStorage
+            return true; // Indicates successful removal
+        }
     }
     return false; // Indicates user not found in the list
 }
 
-// Function to check if a user is in the master list
-function isInMasterList(username) {
-    return masterList.includes(username);
+// Function to check if a user is in the master list of a specific room
+function isInMasterList(roomName, username) {
+    return roomMasterLists[roomName] && roomMasterLists[roomName].includes(username);
 }
 
-//============================
+
+
+
+
+
+//==========================
 
 function displayChatMessage(messageObj, color = 'black') {
     const { from, body, bodyurl, role, avatar, type } = messageObj;
