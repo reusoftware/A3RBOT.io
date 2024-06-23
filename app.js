@@ -390,6 +390,19 @@ spinCheckbox.addEventListener('change', () => {
     });
 
 
+// Function to shorten URL using a URL shortening service
+async function shortenUrl(longUrl) {
+    try {
+        const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
+        if (!response.ok) {
+            throw new Error(`Failed to shorten URL: ${response.status}`);
+        }
+        return await response.text();
+    } catch (error) {
+        console.error('Error shortening URL:', error);
+        return longUrl; // Fallback to original URL
+    }
+}
 
 
 
@@ -688,20 +701,6 @@ async function yt() {
         }
     } else {
         console.warn('Please enter a search query.');
-    }
-}
-
-// Function to shorten URL using a URL shortening service
-async function shortenUrl(longUrl) {
-    try {
-        const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
-        if (!response.ok) {
-            throw new Error(`Failed to shorten URL: ${response.status}`);
-        }
-        return await response.text();
-    } catch (error) {
-        console.error('Error shortening URL:', error);
-        return longUrl; // Fallback to original URL
     }
 }
 
