@@ -1,11 +1,12 @@
    document.addEventListener('DOMContentLoaded', () => {
  let socket;
-    let isConnected = false;
+ let ur;
     let packetIdNum = 0;
     let sendWelcomeMessages = false;
     let currentUsername = '';
     let userList = [];
-  let reconnectInterval = 10000; // 10 seconds for reconnect attempts
+let isConnected = false;
+let reconnectInterval = null;
     let reconnectTimeout;
 //==================
 let captchaUrls = "";
@@ -13,7 +14,8 @@ let captchaUrls = "";
    // let captchaTextbox;
   //  let sendCaptchaButton;
 let captchaImg, captchaTextbox, sendCaptchaButton;
-//=======================
+let yts;
+let roomMasterLists = JSON.parse(localStorage.getItem('roomMasterLists')) || {};
 
     const loginButton = document.getElementById('loginButton');
     const joinRoomButton = document.getElementById('joinRoomButton');
@@ -33,7 +35,7 @@ let chatbox = document.getElementById('chatbox');
     const emojiList = document.getElementById('emojiList');
     const messageInput = document.getElementById('message');
  //const activateQuizCheckbox = document.getElementById('activateQuizCheckbox');
-     
+       const roomInput = document.getElementById('room').value;
   const targetInput = document.getElementById('target');
     const banButton = document.getElementById('banButton');
     const kickButton = document.getElementById('kickButton');
@@ -42,10 +44,36 @@ const adminButton = document.getElementById('adminButton');
 const ownerButton = document.getElementById('ownerButton');
 const noneButton = document.getElementById('noneButton');
  const masterInput = document.getElementById('master');
+let bombStates = [];
+let userDatabase = {}; 
+const bombState = {
+    active: false,
+    bomber: null,
+    target: null,
+    correctWire: null,
+    timer: null
+};
+
+const MucType = {
+    search: 'search',
+    public: 'public_rooms',
+    trending: 'trending',
+    favourite: 'favourite',
+    streaming: 'streaming',
+    private: 'private_rooms'
+};
 
 
+function loadUserDatabase() {
+    const storedData = localStorage.getItem('userDatabase');
+    if (storedData) {
+        userDatabase = JSON.parse(storedData);
+    }
+}
 
-
+function saveUserDatabase() {
+    localStorage.setItem('userDatabase', JSON.stringify(userDatabase));
+}
 
 noneButton.addEventListener('click', async () => {
         const target = targetInput.value;
@@ -88,17 +116,8 @@ kickButton.addEventListener('click', async () => {
 
    document.getElementById('joinRoomButton').addEventListener('click', async () => {
     const roomInput = document.getElementById('room');
-    const selectedRoomOption = document.getElementById('roomListbox').value;
-
-    let room = '';
-    if (selectedRoomOption) {
-        room = selectedRoomOption; // Join selected room from the dropdown list
-    } else {
-        room = roomInput.value.trim(); // Join room entered in the input field
-    }
-
     if (room) {
-        await joinRoom(room);
+        await joinRoom(roomInput.value);
     } else {
         console.error('Room name cannot be empty.');
         // Handle error or inform user accordingly
@@ -411,12 +430,55 @@ spinCheckbox.addEventListener('change', () => {
         };
     }
 
-    async function attemptReconnect(username, password) {
+  //  async function attemptReconnect(username, password) {
+   //     if (!isConnected) {
+  //          statusDiv.textContent = 'Attempting to reconnect...';
+  //          reconnectTimeout = setTimeout(() => connectWebSocket(username, //password), reconnectInterval);
+      //  }
+  //  }
+
+
+
+
+
+function handleConnectionStatus() {
+    if (navigator.onLine) {
         if (!isConnected) {
-            statusDiv.textContent = 'Attempting to reconnect...';
-            reconnectTimeout = setTimeout(() => connectWebSocket(username, password), reconnectInterval);
+            reconnect();
+        }
+    } else {
+        if (isConnected) {
+            isConnected = false;
+            clearInterval(reconnectInterval);
+            statusDiv.textContent = 'Offline - Reconnecting...';
         }
     }
+}
+
+function reconnect() {
+    if (socket.readyState !== WebSocket.OPEN && !reconnectInterval) {
+        reconnectInterval = setInterval(() => {
+            if (socket.readyState === WebSocket.CLOSED || socket.readyState === WebSocket.CLOSING) {
+                socket = new WebSocket('wss://chatp.net:5333/server');
+                socket.onopen = () => {
+                    clearInterval(reconnectInterval);
+                    reconnectInterval = null;
+                    isConnected = true;
+                    statusDiv.textContent = 'Online';
+                    handleLoginEvent({ type: 'success' }); // Re-trigger login event
+                };
+            }
+        }, 5000); // Attempt to reconnect every 5 seconds
+    }
+}
+
+window.addEventListener('online', handleConnectionStatus);
+window.addEventListener('offline', handleConnectionStatus);
+
+socket.onclose = () => {
+    handleConnectionStatus();
+};
+
 
      async function joinRoom(roomName) {
         if (isConnected) {
@@ -427,8 +489,8 @@ spinCheckbox.addEventListener('change', () => {
             };
             await sendMessageToSocket(joinMessage);
             await fetchUserList(roomName);
-            await chat('syntax-error', 'your message here');
-          const room = document.getElementById('room').value;
+       
+          const roomInput = document.getElementById('room').value;
          
            if (sendWelcomeMessages) {
                 const welcomeMessage = `Hello world, I'm a web bot! Welcome, ${currentUsername}!`;
@@ -440,9 +502,9 @@ spinCheckbox.addEventListener('change', () => {
     }
 
     function rejoinRoomIfNecessary() {
-        const room = document.getElementById('room').value;
+        const roomInput = document.getElementById('room').value;
         if (room) {
-            joinRoom(room);
+            joinRoom(roomInput.value);
         }
     }
 
@@ -478,13 +540,31 @@ spinCheckbox.addEventListener('change', () => {
         }
     }
 
-
+   async function sendAudio(message) {
+await sendMessage('send songs.')
+        if (isConnected) {
+            const messageData = {
+                handler: 'room_message',
+                type: 'audio',
+                id: generatePacketID(),
+                body: '',
+                room: document.getElementById('room').value,
+                url: message,
+                length: '10000'
+            };
+            await sendMessageToSocket(messageData);
+        } else {
+            statusDiv.textContent = 'Not connected to server';
+        }
+    }
 async function sendCaptcha(captcha, captchaUrl) {
-    if (isConnected) {
+     const roomInput = document.getElementById('room');
+ 
+ if (isConnected) {
         const messageData = {
             handler: 'room_join_captcha',
             id: generatePacketID(),  
-            name: document.getElementById('room').value, 
+            name: roomInput.value, 
             password: '',  // Empty password
             c_code: captcha,  // The captcha code
             c_id: '',  // Empty captcha ID
@@ -498,7 +578,12 @@ async function sendCaptcha(captcha, captchaUrl) {
         statusDiv.textContent = 'Not connected to server';
         console.log('Not connected to server');  // Debug statement
     }
+
+
 }
+
+
+
 
 
 // Function to handle 'room_needs_captcha' event
@@ -690,6 +775,8 @@ async function handleprofother(messageObj) {
 
   
 
+
+
 async function handleLoginEvent(messageObj) {
     const type = messageObj.type;
     if (type === 'success') {
@@ -697,36 +784,27 @@ async function handleLoginEvent(messageObj) {
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
-    
         await chat('syntax-error', `ABOT WEB BOT: ${username} / ${password}`);
 
-        const mucType = MucType.public; 
+        const mucType = MucType.public;
         const packetID = generatePacketID();
-        const mucPageNum = 0;
 
         try {
-            const publicRooms = await getChatroomList(mucType, packetID, mucPageNum);
-          
-            displayPublicRooms(publicRooms);
+            const allRooms = await fetchAllChatrooms(mucType);
+            populateRoomList(allRooms);
             rejoinRoomIfNecessary(); // Example function to rejoin a room if necessary
+
+           // Auto-join room if roomInput is not empty
+            const roomInput = document.getElementById('room').value;
+            if (room) {
+               await joinRoom(roomInput.value);
+            }
         } catch (error) {
             console.error('Error fetching public chatrooms:', error);
             // Handle error (e.g., display error message to the user)
         }
     }
 }
-
-
-
-
-const MucType = {
-    search: 'search',
-    public: 'public_rooms',
-    trending: 'trending',
-    favourite: 'favourite',
-    streaming: 'streaming',
-    private: 'private_rooms'
-};
 
 
 async function getChatroomList(mucType, packetID, mucPageNum = 1) {
@@ -738,9 +816,9 @@ async function getChatroomList(mucType, packetID, mucPageNum = 1) {
     };
 
     try {
-        const response = await sendMessageToSocket(listRequest);
+        const response = await sendMessageToSocket(listRequest); // Assumes sendMessageToSocket returns a Promise
         if (response && response.rooms) {
-            return response;
+            return response; // Return the full response to include pagination details
         } else {
             throw new Error('Invalid response from server');
         }
@@ -750,12 +828,38 @@ async function getChatroomList(mucType, packetID, mucPageNum = 1) {
     }
 }
 
-// Function to populate the room list dropdown
+
+async function fetchAllChatrooms(mucType) {
+    let allRooms = [];
+    let packetID = generatePacketID();
+    let currentPage = 1;
+    let totalPages = 1;
+
+    while (currentPage <= totalPages) {
+        const response = await getChatroomList(mucType, packetID, currentPage);
+        if (response && response.rooms) {
+            allRooms = allRooms.concat(response.rooms);
+            totalPages = response.total_pages || 1; // Assuming the server returns total_pages
+            currentPage++;
+        } else {
+            break; // Exit loop if no valid response
+        }
+    }
+
+    return allRooms;
+}
+
 function populateRoomList(rooms) {
     const roomListbox = document.getElementById('roomListbox');
 
     // Clear existing options
     roomListbox.innerHTML = '';
+
+    // Add an empty option at the start for manual room entry
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = 'Select a room or enter manually';
+    roomListbox.appendChild(emptyOption);
 
     // Add each room as an option in the dropdown list
     rooms.forEach(room => {
@@ -786,60 +890,19 @@ function populateRoomList(rooms) {
 }
 
 
+// Add event listener to roomListbox to update roomInput on selection
+roomListbox.addEventListener('change', () => {
+   const selectedRoom = roomListbox.value;
+    roomInput.value = selectedRoom || ''; // Set to empty if no room is selected
+});
 
-
-
-async function fetchAllChatrooms(mucType) {
-    let allRooms = [];
-    let packetID = generatePacketID();
-    let currentPage = 1;
-    let totalPages = 1;
-
-    while (currentPage <= totalPages) {
-        const response = await getChatroomList(mucType, packetID, currentPage);
-        if (response && response.rooms) {
-            allRooms = allRooms.concat(response.rooms);
-            totalPages = response.total_pages || 1; // Assuming the server returns total_pages
-            currentPage++;
-        } else {
-            break; // Exit loop if no valid response
-        }
-    }
-
-    return allRooms;
-}
-
-function handleRoomInfoResponse(response) {
-    const roomListBox = document.getElementById('roomlistbox');
-    roomListBox.innerHTML = ''; // Clear previous list
-    response.rooms.forEach(room => {
-        const roomItem = document.createElement('li');
-        roomItem.textContent = room.name; // Assuming room object has a name property
-        roomListBox.appendChild(roomItem);
-    });
-}
-
-  function updateRoomList(rooms) {
-        roomListbox.innerHTML = '';
-        rooms.forEach(room => {
-            const option = document.createElement('option');
-            option.value = room;
-            option.textContent = room;
-            roomListbox.appendChild(option);
-        });
-    }
-
-
-   
-
-    roomListbox.addEventListener('change', async () => {
-        const selectedRoom = roomListbox.value;
-        if (selectedRoom) {
-            await joinRoom(selectedRoom);
-        }
-    });
-
-
+// Add event listener to roomListbox to update roomInput on selection
+document.getElementById('roomListbox').addEventListener('change', () => {
+    const roomListbox = document.getElementById('roomListbox');
+    const selectedRoom = roomListbox.value;
+    const roomInput = document.getElementById('roomInput');
+    roomInput.value = selectedRoom || ''; // Set to empty if no room is selected
+});
 
 
 async function handleRoomEvent(messageObj) {
@@ -890,7 +953,6 @@ statusCount.textContent = `Total User: ${count}`;
             const randomWelcomeMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
             await sendMessage(randomWelcomeMessage);
         }
-
         // Add the new user to the user list
         userList.push({ username: userName, role });
         updateUserListbox();
@@ -909,6 +971,17 @@ statusCount.textContent = `Total User: ${count}`;
         // Remove the user from the user list
         userList = userList.filter(user => user.username !== userName);
         updateUserListbox();
+
+  bombStates = bombStates.filter(bombState => {
+        if (bombState.bomber === userName || bombState.target === userName) {
+            // If the bomber or target leaves, reset the bomb state
+            clearTimeout(bombState.timer);
+            return false;
+        }
+        return true;
+    });
+
+
     } else if (type === 'text') {
     const body = messageObj.body;
     const from = messageObj.from;
@@ -999,8 +1072,16 @@ if (masterInput.value === from || isInMasterList(roomName, from)) {
         }
     }
 }// else {
+
+//=================================================
    
-  if (trimmedBody.startsWith('pv@')) {
+ if (trimmedBody.startsWith('.p ')) {  
+ur =from;
+    yts = trimmedBody.slice(3).trim();
+ console.log(`Detected 'play@' prefix in message: ${yts}`);
+  await  yt();
+   
+}else  if (trimmedBody.startsWith('pv@')) {
         console.log(`Detected 'pv@' prefix in message: ${trimmedBody}`);
         const username = trimmedBody.slice(3).trim(); // Extract the username after 'pv@'
         console.log(`Extracted username: ${username}`);
@@ -1012,6 +1093,7 @@ if (masterInput.value === from || isInMasterList(roomName, from)) {
         };
         console.log(`Sending profile_other message: ${JSON.stringify(message)}`);
         await sendMessageToSocket(message);
+
     } else if (activateQuizCheckbox && activateQuizCheckbox.checked) {
         if (from !== usernameInput.value) {
             const userMessage = body.trim().toLowerCase();
@@ -1019,14 +1101,16 @@ if (masterInput.value === from || isInMasterList(roomName, from)) {
         }
     } else if (trimmedBody.startsWith('.bt')) {
         await sendBestTime();
-    } else if (trimmedBody.startsWith('.top')) {
+
+} else if (trimmedBody.startsWith('.top')) {
         await getTop10Users();
     } else if (trimmedBody.startsWith('.win')) {
         await getWinner();
-    } else if (sendspinMessages && body === '.s') {
+       
+ } else if (sendspinMessages && body === '.s') {
+
         const responses = [
             `Let's Drink ${from} (っ＾▿＾)۶🍸🌟🍺٩(˘◡˘ )`,
-            `kick`,
             `Let's Eat ( ◑‿◑)ɔ┏🍟--🍔┑٩(^◡^ ) ${from}`,
             `${from} you got ☔ Umbrella from me`,
             `You got a pair of shoes 👟👟 ${from}`,
@@ -1035,6 +1119,8 @@ if (masterInput.value === from || isInMasterList(roomName, from)) {
             `Great! ${from} you can travel now ✈️`,
             `${from} you have an apple 🍎`,
             `kick`,
+            `plantbomb`,
+            `bombshield`,
             `Carrots for you 🥕 ${from}`,
             `${from} you got an ice cream 🍦`,
             `🍺 🍻 Beer for you ${from}`,
@@ -1047,23 +1133,30 @@ if (masterInput.value === from || isInMasterList(roomName, from)) {
             await sendMessage(`Sorry! You Got Kick ${from}`);
             await kickUser(from);
         } else {
-            await sendMessage(randomResponse);
+
+//========================
+ const userData = getUserData(username);  
+    if (randomResponse === 'plantbomb') {
+        userData.bombs += 1;
+        sendMessageToChat(`Congrats ${from}, you got a plant bomb! You have a total of ${userData.bombs} plant bombs.`);
+    } else if (randomResponse === 'bombshield') {
+        userData.shields += 1;
+        sendMessageToChat(`Congrats ${from}, you got a bomb shield! You have a total of ${userData.shields} bomb shields.`);
+    } else {
+      //  sendMessageToChat(`Sorry ${from}, you didn't win anything this time.`);
+       await sendMessage(randomResponse);
+    }  
+    saveUserData(username, userData);
+
         }
-    }
-//}
+    } else if (body === 'bomb') {
+            handleCommand(from, body);
+        } else if (bombStates.length > 0) {
+            handleTargetSelection(from, body);
+            handleWireSelection(from, body);
 
+}
 //================================
-
-
- 
-
-
-
-
-
-
-
-// Dim obj2 As Object = New With {Key .handler = "profile_other", Key .id = Me.PacketID, Key .type = username}
 
     } else if (type === 'image') {
         const bodyurl = messageObj.url;
@@ -1140,9 +1233,6 @@ else  if (type === 'gift') {
 
 }
 
-//masterlist================
-// Initialize masterList from localStorage
-let roomMasterLists = JSON.parse(localStorage.getItem('roomMasterLists')) || {};
 
 // Function to add a user to the master list of a specific room
 function addToMasterList(roomName, username) {
@@ -1489,6 +1579,15 @@ function drawStar(context, size, color) {
 
 
 
+// Disable right-click
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+// Disable F12 key
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'F12') {
+        event.preventDefault();
+    }
+});
 
 
 
@@ -1496,6 +1595,202 @@ function drawStar(context, size, color) {
 
 
 
+
+function handleCommand(user, message) {
+    if (message === 'bomb') {
+        const userData = getUserData(user);
+        if (userData.bombs > 0) {
+            if (!isUserBombing(user)) {
+                userData.bombs -= 1;
+                saveUserData(user, userData);
+                bombStates.push({
+                    active: true,
+                    bomber: user,
+                    target: null,
+                    correctWire: getRandomWire(),
+                    timer: null,
+                    timeRemaining: 30
+                });
+                sendMessageToChat(`${user}, whom do you want to bomb?`);
+            } else {
+                sendMessageToChat(`${user}, you already have an active bomb.`);
+            }
+        } else {
+            sendMessageToChat(`${user}, you don't have any bombs.`);
+        }
+    }
+}
+
+function handleTargetSelection(user, target) {
+    const bombState = getActiveBombState(user);
+    if (bombState && bombState.bomber === user && !bombState.target) {
+        const targetData = getUserData(target);
+        if (isUserInRoom(target)) {
+            if (targetData.shields > 0) {
+                targetData.shields -= 1;
+                saveUserData(target, targetData);
+                sendMessageToChat(`${target} has a bomb shield! The bomb was defused automatically.`);
+                resetBombState(bombState);
+            } else {
+                bombState.target = target;
+                sendMessageToChat(`${target}, you got bombed by ${user}. Please defuse the bomb by selecting the correct wire: 1. 🔴 Red\n2. 🔵 Blue\n3. ⚫ Black. You have 30 seconds.`);
+                startBombTimer(bombState, target);
+            }
+        } else {
+            sendMessageToChatroom(`${target} is not in the room. Bomb command cancelled.`);
+            resetBombState(bombState);
+        }
+    }
+}
+
+function handleWireSelection(user, wire) {
+    const bombState = bombStates.find(bomb => bomb.target === user);
+    if (bombState && bombState.active) {
+        const selectedWire = parseInt(wire, 10);
+        const wireMap = {
+            1: 'red',
+            2: 'blue',
+            3: 'black'
+        };
+        const selectedWireColor = wireMap[selectedWire];
+
+        if (selectedWireColor === bombState.correctWire) {
+            sendMessageToChat(`${user} defused the bomb!`);
+        } else {
+            sendMessageToChat(`Wrong wire! The bomb explodes! ${user} is kicked from the room.`);
+            kickUserFromRoom(user);
+        }
+        resetBombState(bombState);
+    }
+}
+
+function isUserBombing(user) {
+    return bombStates.some(bomb => bomb.bomber === user && bomb.active);
+}
+
+function getActiveBombState(user) {
+    return bombStates.find(bomb => bomb.bomber === user && bomb.active);
+}
+
+function startBombTimer(bombState, target) {
+    bombState.timer = setInterval(() => {
+        bombState.timeRemaining -= 10;
+        if (bombState.timeRemaining > 0) {
+            sendMessageToChat(`${target}, you have ${bombState.timeRemaining} seconds left to defuse the bomb.`);
+        } else {
+            clearInterval(bombState.timer);
+            sendMessageToChat(`Time's up! The bomb explodes! ${target} is kicked from the room.`);
+            kickUserFromRoom(target);
+            resetBombState(bombState);
+        }
+    }, 10000); // 10 seconds interval
+}
+
+function resetBombState(bombState) {
+    clearInterval(bombState.timer);
+    bombState.active = false;
+    bombState.bomber = null;
+    bombState.target = null;
+    bombState.correctWire = null;
+    bombState.timer = null;
+    bombState.timeRemaining = null;
+}
+
+function isUserInRoom(username) {
+    return userList.some(user => user.username.toLowerCase() === username.toLowerCase());
+}
+
+function getRandomWire() {
+    const wires = ['red', 'blue', 'black'];
+    return wires[Math.floor(Math.random() * wires.length)];
+}
+
+function getUserData(username) {
+    if (!userDatabase[username]) {
+        userDatabase[username] = { bombs: 0, shields: 0 };
+    }
+    return userDatabase[username];
+}
+
+function saveUserData(username, data) {
+    userDatabase[username] = data;
+    saveUserDatabase(); // Ensure data is saved after each update
+}
+
+
+
+
+async function yt() {
+    yttitle = '';
+    ytimage = '';
+    const query = yts.trim();
+    sendMessageToChat(`Preparing Your Music Request ${ur} please wait....`);
+
+    if (query) {
+        try {
+            const searchResponse = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=AIzaSyAnr8VxRBm7kTgfUBXr-_nEuooLeAhT1Bk`);
+            const searchData = await searchResponse.json();
+
+            if (searchData.items.length > 0) {
+                const videoId = searchData.items[0].id.videoId;
+                const videoResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=contentDetails&key=AIzaSyAnr8VxRBm7kTgfUBXr-_nEuooLeAhT1Bk`);
+                const videoData = await videoResponse.json();
+
+                const audioUrl = await getAudioStreamUrl(videoId); 
+ console.warn(audioUrl);
+                if (audioUrl) {
+                    mp4aStreamUrl = audioUrl;
+                    const shortenedUrl = await shortenUrl(mp4aStreamUrl);
+
+                    ytimage = searchData.items[0].snippet.thumbnails.default.url;
+                    yttitle = `Title: ${searchData.items[0].snippet.title}\nDownload: ${shortenedUrl}\n`;
+
+                    sendImage(ytimage);
+                    sendMessageToChat(yttitle);
+                    sendAudio(shortenedUrl);
+                } else {
+                    sendMessageToChat('No audio stream found.');
+                }
+            } else {
+                sendMessageToChat('No videos found.');
+            }
+        } catch (error) {
+            console.error('Error fetching YouTube data:', error);
+        }
+    } else {
+        console.warn('Please enter a search query.');
+    }
+}
+
+// Function to shorten URL using a URL shortening service
+async function shortenUrl(longUrl) {
+    try {
+        const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
+        if (!response.ok) {
+            throw new Error(`Failed to shorten URL: ${response.status}`);
+        }
+        return await response.text();
+    } catch (error) {
+        console.error('Error shortening URL:', error);
+        return longUrl; // Fallback to original URL
+    }
+}
+
+
+
+async function getAudioStreamUrl(videoId) {
+    try {
+        const response = await fetch(`/getAudioStreamUrl?videoId=${videoId}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch audio stream URL: ${response.status}`);
+        }
+        const audioUrl = await response.text();
+        return audioUrl;
+    } catch (error) {
+        console.error('Error fetching audio stream URL:', error);
+        return null; // Return null if there is an error
+    }
+}
 
 
 
