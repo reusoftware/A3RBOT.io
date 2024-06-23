@@ -648,7 +648,84 @@ function generatePacketID() {
     return `R.U.BULAN©pinoy-2023®#${packetIdNum.toString().padStart(3, '0')}`;
 }
  
+//=============
+async function yt() {
+    yttitle = '';
+    ytimage = '';
+    const query = yts.trim();
+    sendMessageToChat(`Preparing Your Music Request ${ur} please wait....`);
 
+    if (query) {
+        try {
+            const searchResponse = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=AIzaSyAnr8VxRBm7kTgfUBXr-_nEuooLeAhT1Bk`);
+            const searchData = await searchResponse.json();
+
+            if (searchData.items.length > 0) {
+                const videoId = searchData.items[0].id.videoId;
+                const videoResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=contentDetails&key=AIzaSyAnr8VxRBm7kTgfUBXr-_nEuooLeAhT1Bk`);
+                const videoData = await videoResponse.json();
+
+                const audioUrl = await getAudioStreamUrl(videoId); 
+ console.warn(audioUrl);
+                if (audioUrl) {
+                    mp4aStreamUrl = audioUrl;
+                    const shortenedUrl = await shortenUrl(mp4aStreamUrl);
+
+                    ytimage = searchData.items[0].snippet.thumbnails.default.url;
+                    yttitle = `Title: ${searchData.items[0].snippet.title}\nDownload: ${shortenedUrl}\n`;
+
+                    sendImage(ytimage);
+                    sendMessageToChat(yttitle);
+                    sendAudio(shortenedUrl);
+                } else {
+                    sendMessageToChat('No audio stream found.');
+                }
+            } else {
+                sendMessageToChat('No videos found.');
+            }
+        } catch (error) {
+            console.error('Error fetching YouTube data:', error);
+        }
+    } else {
+        console.warn('Please enter a search query.');
+    }
+}
+
+// Function to shorten URL using a URL shortening service
+async function shortenUrl(longUrl) {
+    try {
+        const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
+        if (!response.ok) {
+            throw new Error(`Failed to shorten URL: ${response.status}`);
+        }
+        return await response.text();
+    } catch (error) {
+        console.error('Error shortening URL:', error);
+        return longUrl; // Fallback to original URL
+    }
+}
+
+
+
+async function getAudioStreamUrl(videoId) {
+    try {
+        const response = await fetch(`/getAudioStreamUrl?videoId=${videoId}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch audio stream URL: ${response.status}`);
+        }
+        const audioUrl = await response.text();
+        return audioUrl;
+    } catch (error) {
+        console.error('Error fetching audio stream URL:', error);
+        return null; // Return null if there is an error
+    }
+}
+
+
+      //=============
+
+
+      
   function processReceivedMessage(message) {
     console.log('Received message:', message);
     debugBox.value += `${message}\n`;
@@ -1719,78 +1796,6 @@ function saveUserData(username, data) {
 
 
 
-
-async function yt() {
-    yttitle = '';
-    ytimage = '';
-    const query = yts.trim();
-    sendMessageToChat(`Preparing Your Music Request ${ur} please wait....`);
-
-    if (query) {
-        try {
-            const searchResponse = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=AIzaSyAnr8VxRBm7kTgfUBXr-_nEuooLeAhT1Bk`);
-            const searchData = await searchResponse.json();
-
-            if (searchData.items.length > 0) {
-                const videoId = searchData.items[0].id.videoId;
-                const videoResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=contentDetails&key=AIzaSyAnr8VxRBm7kTgfUBXr-_nEuooLeAhT1Bk`);
-                const videoData = await videoResponse.json();
-
-                const audioUrl = await getAudioStreamUrl(videoId); 
- console.warn(audioUrl);
-                if (audioUrl) {
-                    mp4aStreamUrl = audioUrl;
-                    const shortenedUrl = await shortenUrl(mp4aStreamUrl);
-
-                    ytimage = searchData.items[0].snippet.thumbnails.default.url;
-                    yttitle = `Title: ${searchData.items[0].snippet.title}\nDownload: ${shortenedUrl}\n`;
-
-                    sendImage(ytimage);
-                    sendMessageToChat(yttitle);
-                    sendAudio(shortenedUrl);
-                } else {
-                    sendMessageToChat('No audio stream found.');
-                }
-            } else {
-                sendMessageToChat('No videos found.');
-            }
-        } catch (error) {
-            console.error('Error fetching YouTube data:', error);
-        }
-    } else {
-        console.warn('Please enter a search query.');
-    }
-}
-
-// Function to shorten URL using a URL shortening service
-async function shortenUrl(longUrl) {
-    try {
-        const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
-        if (!response.ok) {
-            throw new Error(`Failed to shorten URL: ${response.status}`);
-        }
-        return await response.text();
-    } catch (error) {
-        console.error('Error shortening URL:', error);
-        return longUrl; // Fallback to original URL
-    }
-}
-
-
-
-async function getAudioStreamUrl(videoId) {
-    try {
-        const response = await fetch(`/getAudioStreamUrl?videoId=${videoId}`);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch audio stream URL: ${response.status}`);
-        }
-        const audioUrl = await response.text();
-        return audioUrl;
-    } catch (error) {
-        console.error('Error fetching audio stream URL:', error);
-        return null; // Return null if there is an error
-    }
-}
 
 
 
