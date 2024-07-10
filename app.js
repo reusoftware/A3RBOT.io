@@ -1,4 +1,7 @@
-   document.addEventListener('DOMContentLoaded', () => {
+
+
+//first page 
+document.addEventListener('DOMContentLoaded', () => {
  let socket;
  let ur;
     let packetIdNum = 0;
